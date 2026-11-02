@@ -1,0 +1,78 @@
+[
+  {
+    "attempt": null,
+    "detail": "Run started",
+    "duration_s": null,
+    "kind": "run_started",
+    "provider": null,
+    "role": null,
+    "round": null,
+    "ts": "2026-10-31T22:03:53Z",
+    "usage": null
+  },
+  {
+    "attempt": 1,
+    "detail": "Creating revision 1",
+    "duration_s": null,
+    "kind": "author_started",
+    "provider": "claude",
+    "role": "author",
+    "round": 1,
+    "ts": "2026-10-31T22:03:53Z",
+    "usage": null
+  },
+  {
+    "attempt": 1,
+    "detail": "Completed",
+    "duration_s": 0.0673618,
+    "kind": "author_completed",
+    "provider": "claude",
+    "role": "author",
+    "round": 1,
+    "ts": "2026-10-31T22:03:53Z",
+    "usage": {
+      "cache_creation_tokens": 0,
+      "cache_read_tokens": 10,
+      "input_tokens": 100,
+      "output_tokens": 50
+    }
+  },
+  {
+    "attempt": 1,
+    "detail": "Reviewing revision 1",
+    "duration_s": null,
+    "kind": "review_started",
+    "provider": "codex",
+    "role": "reviewer",
+    "round": 1,
+    "ts": "2026-10-31T22:03:53Z",
+    "usage": null
+  },
+  {
+    "attempt": 1,
+    "detail": "Completed",
+    "duration_s": 0.0667424,
+    "kind": "review_completed",
+    "provider": "codex",
+    "role": "reviewer",
+    "round": 1,
+    "ts": "2026-10-31T22:03:53Z",
+    "usage": {
+      "cache_creation_tokens": null,
+      "cache_read_tokens": 10,
+      "input_tokens": 100,
+      "output_tokens": 50
+    }
+  },
+  {
+    "attempt": null,
+    "detail": "StoppedHuman",
+    "duration_s": null,
+    "kind": "gate",
+    "provider": null,
+    "role": null,
+    "round": 1,
+    "ts": "2026-10-31T22:03:53Z",
+    "usage": null
+  }
+]

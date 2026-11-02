@@ -1,0 +1,49 @@
+[package]
+name = "symvoulio-core"
+description = "Deterministic review core and output packages"
+version.workspace = true
+edition = "2021"
+license.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+time = { version = "0.3", features = ["formatting", "macros"] }
+# Serialize the public contracts.
+serde = { version = "1", features = ["derive"] }
+# Read and write provider JSON and audit records.
+serde_json = "1"
+# Hash original input bytes.
+sha2 = "0.10"
+# Measure inserted words.
+similar = "2"
+# Read input documents and write revisions.
+docx-rs = { version = "0.4", default-features = false }
+quick-xml = "0.41"
+zip = { version = "8.6", default-features = false, features = ["deflate"] }
+# Extract PDF text layers.
+pdf-extract = "0.10"
+# Parse Markdown formatting for revisions.
+pulldown-cmark = "0.13"
+# Expose readable extraction and output errors.
+thiserror = "2"
+
+# Validate provider contracts without network resolution.
+jsonschema = { version = "0.33", default-features = false }
+
+# Sanitize provider diagnostics at persistence and IPC boundaries.
+regex = "1"
+
+[dev-dependencies]
+# Isolate fixture and package files.
+tempfile = "3"
+# Property tests of the gate, the schema validator and redaction.
+proptest = "1"
+
+[target.'cfg(unix)'.dependencies]
+# Terminate the entire provider process group.
+libc = "0.2"
+
+[target.'cfg(windows)'.dependencies]
+winreg = "0.55"
+# Own suspended provider trees before any descendant can start.
+windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_Security", "Win32_System_JobObjects", "Win32_System_Threading", "Win32_System_Diagnostics_ToolHelp"] }

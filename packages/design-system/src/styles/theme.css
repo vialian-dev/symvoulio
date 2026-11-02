@@ -1,0 +1,133 @@
+/* SPDX-License-Identifier: MIT */
+/* Copyright (c) 2026 Vialian */
+/* Shared UI kit design tokens: icy airy background, navy serif small caps, cobalt accent, gold for value, red only for flags.
+   Import AFTER `@import "tailwindcss";` in the product's own CSS entry:
+     @import "tailwindcss";
+     @import "@symvoulio/ui/theme.css";
+   Sections: dark variant · Tailwind theme (fonts, colours, shadows, radius, easing) · semantic CSS variables for light
+   and .dark · base · typography helpers (.caps, .serif-title, .num) · per-script font stacks (CJK, Devanagari, Hebrew)
+   · reduced motion. Changing a value here changes every product: that is the point. */
+
+/* The package's own components are a Tailwind source wherever the package is installed. */
+@source "../";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* CJK fallbacks stand before the generic families: a machine without system CJK fonts still has glyphs. */
+  --font-cjk: "Noto Sans SC Variable", "Noto Sans JP Variable", "Noto Sans KR Variable";
+  --font-serif: "Cormorant SC", "Cormorant Garamond", Georgia, var(--font-cjk), serif;
+  --font-sans: "Inter", var(--font-cjk), ui-sans-serif, system-ui, sans-serif;
+
+  --color-ice-50: #f7fbfe;
+  --color-ice-100: #eef6fc;
+  --color-ice-200: #dcebf7;
+  --color-ice-300: #c3dcef;
+  --color-navy-900: #0b1f44;
+  --color-navy-800: #12295a;
+  --color-navy-700: #1b3670;
+  --color-navy-600: #2a4888;
+  --color-cobalt-600: #1f5fe0;
+  --color-cobalt-500: #2f6ff0;
+  --color-cobalt-400: #5b8ff5;
+  --color-cobalt-100: #e3edfe;
+  --color-gold-500: #d3a63a;
+  --color-gold-400: #e2bd5b;
+  --color-gold-100: #fbf3dc;
+  --color-flag-600: #c8343b;
+  --color-flag-100: #fde8e9;
+  --color-mist-400: #8aa0bd;
+  --color-mist-500: #6a7f9c;
+  --color-mist-600: #566a87; /* text-bearing muted: 5.5:1 on white (WCAG AA) */
+  --color-gold-700: #8a6510; /* text-bearing gold: 5.3:1 on white */
+  --color-flag-700: #b52a31;
+
+  --shadow-card: 0 1px 2px rgb(11 31 68 / 0.04), 0 8px 24px -8px rgb(11 31 68 / 0.12);
+  --shadow-lift: 0 2px 4px rgb(11 31 68 / 0.06), 0 16px 40px -12px rgb(11 31 68 / 0.22);
+  --radius-card: 14px;
+  --ease-glide: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+:root {
+  --bg: var(--color-ice-50);
+  --bg-grad: radial-gradient(1200px 600px at 10% -10%, #e6f1fb 0%, transparent 60%),
+    radial-gradient(900px 500px at 110% 0%, #eaf3fd 0%, transparent 55%), var(--color-ice-50);
+  --surface: #ffffff;
+  --surface-2: var(--color-ice-100);
+  --line: #dbe6f2;
+  --ink: var(--color-navy-900);
+  --ink-2: var(--color-navy-700);
+  --muted: var(--color-mist-600);
+  --accent: var(--color-cobalt-600);
+  --accent-soft: var(--color-cobalt-100);
+  --value: var(--color-gold-500); /* decorative fills (bars, dots) */
+  --value-ink: var(--color-gold-700); /* gold text */
+  --on-accent: #ffffff; /* text on the accent fill */
+  --value-soft: var(--color-gold-100);
+  --flag: var(--color-flag-700);
+  --flag-soft: var(--color-flag-100);
+  color-scheme: light;
+}
+
+.dark {
+  --bg: #071430;
+  --bg-grad: radial-gradient(1200px 600px at 10% -10%, #10285a 0%, transparent 60%),
+    radial-gradient(900px 500px at 110% 0%, #0d2250 0%, transparent 55%), #071430;
+  --surface: #0d1f45;
+  --surface-2: #11285a;
+  --line: #1d3a72;
+  --ink: #eaf2ff;
+  --ink-2: #c4d6f5;
+  --muted: #8ea6cf;
+  --accent: #6b9bff;
+  --accent-soft: #15306a;
+  --value: #e2bd5b;
+  --value-ink: #e2bd5b;
+  --on-accent: #071430; /* 6.7:1 on #6b9bff */
+  --value-soft: #2c2a1c;
+  --flag: #ff6b70;
+  --flag-soft: #3a1622;
+  color-scheme: dark;
+}
+
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg-grad);
+  background-attachment: fixed;
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Wide-tracked caps between thin rules — subtitles and KPI captions on the banners */
+.caps { text-transform: uppercase; letter-spacing: 0.18em; font-size: 11px; font-weight: 500; color: var(--muted); }
+.serif-title { font-family: var(--font-serif); color: var(--ink); letter-spacing: 0.01em; }
+.num { font-family: var(--font-serif); font-variant-numeric: lining-nums tabular-nums; }
+
+/* CJK (brief §0б): Noto Serif/Sans SC or JP, no small caps and no uppercase tracking on ideographs, CJK line breaking. */
+:root[lang="zh-Hans"] { --font-serif: "Noto Serif SC", "Cormorant SC", "Noto Sans SC Variable", var(--font-cjk), serif; --font-sans: "Noto Sans SC", "Inter", "Noto Sans SC Variable", var(--font-cjk), sans-serif; }
+:root[lang="ja"] { --font-serif: "Noto Serif JP", "Cormorant SC", "Noto Sans JP Variable", var(--font-cjk), serif; --font-sans: "Noto Sans JP", "Inter", "Noto Sans JP Variable", var(--font-cjk), sans-serif; }
+:root[data-script="cjk"] .caps { text-transform: none; letter-spacing: 0; font-size: 12px; font-weight: 600; }
+:root[data-script="cjk"] .serif-title { letter-spacing: 0; font-weight: 700; }
+:root[data-script="cjk"] body { word-break: normal; line-break: strict; overflow-wrap: break-word; }
+/* A value never breaks inside itself (CJK «55 / %» on two lines): numbers stay whole, text around them wraps. */
+.num { white-space: nowrap; }
+/* German has the longest words: never clip a label, wrap it. */
+:root[lang="de"] button, :root[lang="de"] .caps { hyphens: auto; overflow-wrap: anywhere; }
+/* …but below 1024 px a table header keeps its words whole: «anywhere» lowers a column's min width to one letter,
+   so the table squeezed into its card instead of scrolling inside it. */
+@media (max-width: 1023.98px) {
+  :root[lang="de"] th, :root[lang="de"] th.caps, :root[lang="de"] th .caps, :root[lang="de"] [role="columnheader"].caps { overflow-wrap: break-word; }
+}
+:root[lang="ko"] { --font-serif: "Noto Serif KR", "Cormorant SC", "Noto Sans KR Variable", var(--font-cjk), serif; --font-sans: "Noto Sans KR", "Inter", "Noto Sans KR Variable", var(--font-cjk), sans-serif; }
+:root[lang="hi"] { --font-serif: "Noto Serif Devanagari", "Cormorant SC", var(--font-cjk), serif; --font-sans: "Noto Sans Devanagari", "Inter", var(--font-cjk), sans-serif; }
+:root[data-script="devanagari"] .caps { text-transform: none; letter-spacing: 0.02em; font-size: 12px; font-weight: 600; }
+:root[lang="he"] { --font-serif: "Noto Serif Hebrew", "Cormorant SC", var(--font-cjk), serif; --font-sans: "Noto Sans Hebrew", "Inter", var(--font-cjk), sans-serif; }
+:root[data-script="hebrew"] .caps { text-transform: none; letter-spacing: 0.02em; font-size: 12px; font-weight: 600; }
+
+/* Reduced motion everywhere, not only in the motif (WCAG 2.3.3). */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}

@@ -1,0 +1,65 @@
+/* SPDX-License-Identifier: MIT
+   Copyright (c) 2026 Vialian */
+@import "tailwindcss";
+/* Tokens, Tailwind theme and typography: one source in the shared UI kit. */
+@import "../packages/design-system/src/styles/theme.css";
+@source not "../packages/design-system/example";
+@source not "../packages/design-system/README.md";
+
+/* Symvoulio additions on top of the family tokens: terminal surface, terminal ink and severity tones. Light is the default
+   (the shared UI kit look); `.dark` is the other side of the top-bar toggle. */
+:root {
+  --term-bg: #f7faff;
+  --term-line: #d3dff0;
+  --term-ink: #1b2d52;
+  --term-dim: #6a7f9c;
+  --sev-critical: #c8343b;
+  --sev-high: #c4621b;
+  --sev-medium: #8a6510;
+  --sev-low: #566a87;
+  --ok: #157a5a;
+  --ok-soft: #dff5ec;
+  --font-mono: "JetBrains Mono", "Cascadia Mono", Consolas, monospace;
+}
+/* After :root on purpose: both match <html>, the later rule wins. */
+.dark {
+  --term-ink: #c4d6f5;
+  --term-dim: #7d93b8;
+  --term-bg: #050d22;
+  --term-line: #16305f;
+  --sev-critical: #ff6b70;
+  --sev-high: #ffa45c;
+  --sev-medium: #e2bd5b;
+  --sev-low: #8ea6cf;
+  --ok: #4fd1a5;
+  --ok-soft: #0f3b35;
+}
+html, body { overflow: hidden; }
+/* Thin scrollbars in the family colours, light and dark (no browser-default grey bar with arrow buttons). */
+* { scrollbar-width: thin; scrollbar-color: color-mix(in oklab, var(--muted) 45%, transparent) transparent; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: color-mix(in oklab, var(--muted) 45%, transparent); border-radius: 4px; }
+::-webkit-scrollbar-track, ::-webkit-scrollbar-corner { background: transparent; }
+::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
+.xterm { padding: 8px 10px; height: 100%; }
+/* xterm draws its own scrollbar; thin and rounded like the page scrollbars (colours in the xterm theme). */
+.xterm .xterm-scrollable-element > .scrollbar.vertical { width: 8px !important; }
+.xterm .xterm-scrollable-element > .scrollbar.vertical > .slider { width: 6px !important; left: 1px !important; border-radius: 3px; }
+.xterm .xterm-scrollable-element > .shadow { display: none !important; }
+.xterm .xterm-viewport { background-color: var(--term-bg) !important; }
+.xterm .xterm-viewport::-webkit-scrollbar { width: 8px; }
+.xterm .xterm-viewport::-webkit-scrollbar-thumb { background: var(--term-line); border-radius: 4px; }
+
+@keyframes panel-pulse {
+  0%, 100% { box-shadow: inset 0 0 0 1px var(--accent), 0 0 0 0 color-mix(in oklab, var(--accent) 45%, transparent); }
+  50% { box-shadow: inset 0 0 0 1px var(--accent), 0 0 22px 2px color-mix(in oklab, var(--accent) 35%, transparent); }
+}
+.panel-pulse { animation: panel-pulse 1.6s var(--ease-glide) infinite; }
+@keyframes dot-pulse { 0%, 100% { opacity: 1 } 50% { opacity: 0.35 } }
+.dot-pulse { animation: dot-pulse 1s ease-in-out infinite; }
+
+/* xterm's ANSI dim CSS uses translucent text even when the contrast cache needs
+   no adjustment. Keep installer locations readable against the light panel. */
+:root:not(.dark) [data-testid^="term-"] .xterm-rows .xterm-dim {
+  color: #526583 !important;
+}

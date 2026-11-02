@@ -1,0 +1,76 @@
+{
+ "frame": {
+  "navigation": "ניווט",
+  "sectionsFor": "מדורים לתפקיד: {{role}}",
+  "allScreens": "כל המסכים",
+  "search": "חיפוש לקוחות ומסמכים",
+  "searchShort": "חיפוש",
+  "breadcrumbs": "פירורי לחם",
+  "agent": "סוכן",
+  "role": "תפקיד",
+  "language": "שפה",
+  "theme": "ערכת נושא",
+  "prototypeOnly": "אב טיפוס בלבד",
+  "myQueue": "התור שלי",
+  "project": "לקוח"
+ },
+ "lang": {
+  "pseudo": "פסאודו"
+ },
+ "common": {
+  "close": "סגירה"
+ },
+ "role": {
+  "accountant": "רואה חשבון",
+  "partner": "שותף"
+ },
+ "nav": {
+  "home": "לקוחות"
+ },
+ "home": {
+  "caption": "לקוחות · מסמכים · מועדים",
+  "title": "לקוחות",
+  "fees": "שכר טרחה החודש",
+  "feesWhy": "סכום החשבוניות שהונפקו החודש",
+  "docs": "מסמכים ממתינים",
+  "docsWhy": "מסמכים שהועלו וטרם נבדקו",
+  "empty": "אין מועדים השבוע.",
+  "client": "לקוח",
+  "due": "מועד",
+  "clients_one": "לקוח {{count}}",
+  "clients_two": "{{count}} לקוחות",
+  "clients_other": "{{count}} לקוחות"
+ },
+ "banner": {
+  "slogan": "כל מספר מסביר את עצמו."
+ },
+ "a1": {
+  "try": "נסו",
+  "send": "שליחה",
+  "placeholder": "שאלו את הסוכן"
+ },
+ "a2": {
+  "caption": "תצוגה מקדימה של שינוי",
+  "before": "לפני",
+  "after": "אחרי",
+  "yes": "כן, להחיל",
+  "no": "לא",
+  "journal": "יומן",
+  "journalNote": "כל שינוי נרשם ביומן וניתן לבטלו.",
+  "rollback": "ביטול"
+ },
+ "access": {
+  "readOnly": "קריאה בלבד",
+  "deniedCaption": "אין גישה",
+  "deniedTitle": "המסך אינו פתוח לתפקיד שלך",
+  "deniedText": "בקשו הרשאה ממנהל."
+ },
+ "all": {
+  "caption": "{{n}} מסכים",
+  "intro": "כל המסכים; התפריט של {{role}} מציג רק את המדורים שלו.",
+  "open": "פתיחה",
+  "inMenu": "בתפריט",
+  "byLink": "בקישור",
+  "noRight": "אין הרשאה"
+ }
+}

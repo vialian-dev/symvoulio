@@ -1,0 +1,35 @@
+{
+  "human_issue_decisions": [],
+  "human_questions": [
+    {
+      "answer": null,
+      "answeredAt": null,
+      "answeredBy": null,
+      "issue_id": "R01-001",
+      "question": "Who approves the capital budget?",
+      "resolved": false,
+      "round": 1
+    },
+    {
+      "answer": null,
+      "answeredAt": null,
+      "answeredBy": null,
+      "issue_id": "R01-002",
+      "question": "Which currency do the totals use?",
+      "resolved": false,
+      "round": 1
+    }
+  ],
+  "open_issues": [
+    {
+      "criterion": "All totals must reconcile.",
+      "evidence": "Summary: the hub costs $4.6M.",
+      "finding": "The cost total lacks supporting evidence.",
+      "human_decision_required": false,
+      "issue_id": "R01-005",
+      "proposed_action": "Supply the cost breakdown.",
+      "severity": "high",
+      "status": "open"
+    }
+  ]
+}

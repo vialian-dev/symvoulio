@@ -1,0 +1,35 @@
+# Strings that must never appear in the public tree. One extended regular expression per line (grep -E, case-
+# insensitive). Extend freely; the check fails on any match and prints file:line.
+# --- infrastructure
+192\.168\.
+10\.[0-9]+\.[0-9]+\.[0-9]+
+\b(Z|N|M|X|Y):[/\]
+[C]:[/\](Projects_Local|Users)
+/[h]ome/vialian
+[v]ialian@
+[r]egbot
+[g]itlab
+\.[l]an\b
+# --- internal people, projects and tooling
+[c]onsil+ium
+[m]ensurabilitas
+[d]atineri
+[a]stra\b
+[c]oordinator
+[c]onductor
+[a]vatar-tester
+[e]yes E[0-9]
+[t]hread .?bot
+[c]odex wave
+[D]-SY-[0-9]
+[S]CREEN_MAP
+[D]OCS_FACTS
+[S]PEC_owner
+[L]INKEDIN_POSTS
+[o]wner [0-9]{1,2}\.10
+\([o]wner\b
+# --- internal model and session names
+[g]pt-6
+[c]laude-opus-5
+[r]ollout-20
+[s]ession_id.{0,4}[0-9a-f]{8}-

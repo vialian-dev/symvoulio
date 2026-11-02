@@ -1,0 +1,66 @@
+{
+  "summary": "Northwind business case review.",
+  "issues": [
+    {
+      "issue_id": "R01-001",
+      "severity": "critical",
+      "criterion": "All totals must reconcile.",
+      "finding": "The capital cost table sums to $4.6M, but the executive summary states $4.2M.",
+      "evidence": "Section 4, Table 2 vs. Executive summary, paragraph 1",
+      "proposed_action": "Reconcile the table and the summary and state which figure is correct.",
+      "human_decision_required": false,
+      "status": "open"
+    },
+    {
+      "issue_id": "R01-002",
+      "severity": "high",
+      "criterion": "All factual claims must be supported.",
+      "finding": "The 18 % annual volume growth forecast has no source.",
+      "evidence": "Section 3.2",
+      "proposed_action": "Add the source or remove the claim.",
+      "human_decision_required": false,
+      "status": "open"
+    },
+    {
+      "issue_id": "R01-003",
+      "severity": "high",
+      "criterion": "All totals must reconcile.",
+      "finding": "A payback period of 2.1 years does not follow from Table 3; its cash flows give 2.9 years.",
+      "evidence": "Section 5, Table 3",
+      "proposed_action": "Recalculate the payback period from Table 3.",
+      "human_decision_required": false,
+      "status": "open"
+    },
+    {
+      "issue_id": "R01-004",
+      "severity": "medium",
+      "criterion": "Tone: executive and concise.",
+      "finding": "The executive summary is long and repeats the background.",
+      "evidence": "Executive summary",
+      "proposed_action": "Cut the summary to the decision, the cost, the forecast and the payback.",
+      "human_decision_required": false,
+      "status": "open"
+    },
+    {
+      "issue_id": "R01-005",
+      "severity": "medium",
+      "criterion": "All factual claims must be supported.",
+      "finding": "The market size cites a 2019 source.",
+      "evidence": "Section 2.1",
+      "proposed_action": "Use a current source or mark the figure as dated.",
+      "human_decision_required": true,
+      "status": "open"
+    },
+    {
+      "issue_id": "R01-006",
+      "severity": "medium",
+      "criterion": "No unresolved Critical risks.",
+      "finding": "The labour availability risk has no mitigation owner.",
+      "evidence": "Section 6, Risks",
+      "proposed_action": "Name an owner and a mitigation date.",
+      "human_decision_required": false,
+      "status": "open"
+    }
+  ],
+  "criteria_results": []
+}

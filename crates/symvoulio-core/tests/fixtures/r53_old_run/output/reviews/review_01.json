@@ -1,0 +1,22 @@
+{
+  "criteria_results": [
+    {
+      "criterion": "All totals must reconcile.",
+      "met": false,
+      "note": "The $4.6M total cannot be reconciled."
+    }
+  ],
+  "issues": [
+    {
+      "criterion": "All totals must reconcile.",
+      "evidence": "Summary: the hub costs $4.6M.",
+      "finding": "The cost total lacks supporting evidence.",
+      "human_decision_required": false,
+      "issue_id": "R01-005",
+      "proposed_action": "Supply the cost breakdown.",
+      "severity": "high",
+      "status": "open"
+    }
+  ],
+  "summary": "Unsuitable until the cost total is supported."
+}

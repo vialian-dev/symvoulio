@@ -1,0 +1,12 @@
+{
+  "_comment": "Keys of the `common` namespace that the standard frame wiring reads (README «Translations»). A product supplies them in all its languages; i18n_check.py --require fails when English lacks one.",
+  "common": [
+    "frame.navigation", "frame.sectionsFor", "frame.allScreens", "frame.search", "frame.searchShort", "frame.breadcrumbs",
+    "frame.agent", "frame.role", "frame.language", "frame.theme", "frame.prototypeOnly", "frame.myQueue", "frame.project",
+    "lang.pseudo", "common.close",
+    "a1.try", "a1.send", "a1.placeholder",
+    "a2.caption", "a2.before", "a2.after", "a2.yes", "a2.no", "a2.journal", "a2.journalNote", "a2.rollback",
+    "access.readOnly", "access.deniedCaption", "access.deniedTitle", "access.deniedText",
+    "all.caption", "all.intro", "all.open", "all.inMenu", "all.byLink", "all.noRight"
+  ]
+}

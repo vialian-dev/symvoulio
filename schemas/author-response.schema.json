@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://symvoulio.com/schemas/author-response.schema.json",
+  "title": "Symvoulio author response",
+  "description": "What the Author returns for one round (spec 12, steps 1 and 3). The Author returns the whole revised document as Markdown in revised_document and the app writes the revision files; the provider never writes files. One entry in responses per open finding of the previous review. The suggested fields of the spec map as: findings_accepted = responses with response accepted; findings_rejected and evidence_for_rejection = responses with response rejected_with_evidence and their evidence. Strict form: every property is required and no other property is allowed.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["revised_document", "changes_made", "responses", "new_claims", "human_decisions_required"],
+  "properties": {
+    "revised_document": { "type": "string", "description": "The complete revised document, Markdown." },
+    "changes_made": { "type": "array", "items": { "type": "string" } },
+    "responses": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["issue_id", "response", "explanation", "evidence"],
+        "properties": {
+          "issue_id": { "type": "string", "pattern": "^R[0-9]{2}-[0-9]{3}$" },
+          "response": { "type": "string", "enum": ["accepted", "rejected_with_evidence", "partially_accepted", "human_decision_required"] },
+          "explanation": { "type": "string" },
+          "evidence": { "type": "string", "description": "Required content for rejected_with_evidence; may be empty otherwise." }
+        }
+      }
+    },
+    "new_claims": { "type": "array", "items": { "type": "string" }, "description": "Factual claims this revision adds that were not in the sources." },
+    "human_decisions_required": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["issue_id", "question"],
+        "properties": {
+          "issue_id": { "type": "string", "description": "Ignored placeholder; the application assigns the question a Q identifier." },
+          "question": { "type": "string" }
+        }
+      }
+    }
+  }
+}

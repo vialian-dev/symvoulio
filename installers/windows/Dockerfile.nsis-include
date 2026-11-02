@@ -1,0 +1,9 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Vialian
+# Debian bookworm ships NSIS 3.08, without Include/Win/RestartManager.nsh, which Tauri's NSIS template includes
+# (measured 30.10: makensis «could not find: "Win\RestartManager.nsh"»). Add that one header from the official NSIS 3.10.
+FROM symvoulio-build:1
+RUN apt-get update && apt-get install -y --no-install-recommends unzip && rm -rf /var/lib/apt/lists/* \
+ && curl -fsSL -o /tmp/nsis.zip https://downloads.sourceforge.net/project/nsis/NSIS%203/3.10/nsis-3.10.zip \
+ && unzip -j /tmp/nsis.zip 'nsis-3.10/Include/Win/RestartManager.nsh' -d /usr/share/nsis/Include/Win/ \
+ && rm /tmp/nsis.zip && ls -la /usr/share/nsis/Include/Win/RestartManager.nsh

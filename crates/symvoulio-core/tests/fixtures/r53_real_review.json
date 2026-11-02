@@ -1,0 +1,27 @@
+{
+  "criteria_results": [
+    {
+      "criterion": "All factual claims must be supported.",
+      "met": false,
+      "note": "Neither the $4.6M cost nor the 2.85-year payback is supported by the supplied material. Table 3 is referenced but absent."
+    },
+    {
+      "criterion": "All totals must reconcile.",
+      "met": false,
+      "note": "The $4.6M total cannot be reconciled because no cost breakdown or supporting table is provided."
+    }
+  ],
+  "issues": [
+    {
+      "criterion": "All factual claims must be supported.",
+      "evidence": "Summary: “The hub costs $4.6M and pays back in 2.85 years (Table 3).”",
+      "finding": "Both decision-relevant figures lack supporting evidence; the referenced Table 3 is missing. The cost total also cannot be reconciled from the supplied material.",
+      "human_decision_required": false,
+      "issue_id": "R01-001",
+      "proposed_action": "Supply Table 3 with sourced cost components and the payback calculation, and verify both figures against it. Otherwise remove the unsupported figures.",
+      "severity": "high",
+      "status": "open"
+    }
+  ],
+  "summary": "The revision removes the original’s unrelated reviewing instructions. It remains unsuitable for executive reliance because its cost and payback figures are unsupported and the cost total cannot be reconciled."
+}

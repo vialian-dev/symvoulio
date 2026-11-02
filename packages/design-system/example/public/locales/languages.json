@@ -1,0 +1,4 @@
+[
+ { "code": "en", "native": "English", "script": "latin" },
+ { "code": "he", "native": "עברית", "script": "hebrew", "dir": "rtl" }
+]

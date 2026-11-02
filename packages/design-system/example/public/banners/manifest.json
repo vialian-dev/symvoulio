@@ -1,0 +1,5 @@
+{
+ "_settings": { "full_again_after_days": 7, "collapse_after_ms": 3500, "label_expand": "Show the banner", "label_collapse": "Collapse the banner to its slogan" },
+ "_places": { "home": { "id": "E01", "variant": "clean_linkedin" } },
+ "E01": { "slogan": "Every number explains itself.", "alt": "Example banner: no picture file yet, so the series-style stub shows the slogan." }
+}

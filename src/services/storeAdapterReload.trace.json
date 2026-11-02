@@ -1,0 +1,90 @@
+{
+  "alias": "run-mvwbdiu2",
+  "backendId": "20261031-112447-3e238a",
+  "reloadsAtMs": [
+    44685,
+    74651
+  ],
+  "snapshots": [
+    {
+      "time": "2026-10-31T11:26:00.402Z",
+      "alias": "20261031-112447-3e238a",
+      "backendId": "20261031-112447-3e238a",
+      "generation": 1,
+      "revision": 2,
+      "state": "running",
+      "kind": "snapshot",
+      "decision": "received"
+    },
+    {
+      "time": "2026-10-31T11:26:06.353Z",
+      "alias": "20261031-112447-3e238a",
+      "backendId": "20261031-112447-3e238a",
+      "generation": 1,
+      "revision": 4,
+      "state": "running",
+      "kind": "snapshot",
+      "decision": "received"
+    },
+    {
+      "time": "2026-10-31T11:26:06.379Z",
+      "alias": "20261031-112447-3e238a",
+      "backendId": "20261031-112447-3e238a",
+      "generation": 1,
+      "revision": 4,
+      "state": "running",
+      "kind": "snapshot",
+      "decision": "received"
+    },
+    {
+      "time": "2026-10-31T11:26:07.094Z",
+      "alias": "20261031-112447-3e238a",
+      "backendId": "20261031-112447-3e238a",
+      "generation": 1,
+      "revision": 6,
+      "state": "running",
+      "kind": "snapshot",
+      "decision": "received"
+    },
+    {
+      "time": "2026-10-31T11:26:07.113Z",
+      "alias": "20261031-112447-3e238a",
+      "backendId": "20261031-112447-3e238a",
+      "generation": 1,
+      "revision": 7,
+      "state": "stopped",
+      "kind": "snapshot",
+      "decision": "received"
+    },
+    {
+      "time": "2026-10-31T11:26:07.317Z",
+      "alias": "20261031-112447-3e238a",
+      "backendId": "20261031-112447-3e238a",
+      "generation": 1,
+      "revision": 7,
+      "state": "stopped",
+      "kind": "snapshot",
+      "decision": "received"
+    },
+    {
+      "time": "2026-10-31T11:26:07.345Z",
+      "alias": "20261031-112447-3e238a",
+      "backendId": "20261031-112447-3e238a",
+      "generation": 1,
+      "revision": 7,
+      "state": "stopped",
+      "kind": "snapshot",
+      "decision": "received"
+    },
+    {
+      "time": "2026-10-31T11:26:07.358Z",
+      "alias": "20261031-112447-3e238a",
+      "backendId": "20261031-112447-3e238a",
+      "generation": 1,
+      "revision": 7,
+      "state": "stopped",
+      "kind": "snapshot",
+      "decision": "received"
+    }
+  ]
+}

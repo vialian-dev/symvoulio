@@ -1,0 +1,62 @@
+{
+  "summary": "The case needs a reconciled capital total and a supported forecast. The labour mitigation also needs an accountable owner and a firm date.",
+  "issues": [
+    {
+      "issue_id": "R01-001",
+      "severity": "critical",
+      "criterion": "All totals must reconcile.",
+      "finding": "The executive summary states $4.2M, while Table 2 totals $4.6M.",
+      "evidence": "Executive summary and section 4, Table 2",
+      "proposed_action": "Reconcile the total against the capital estimate.",
+      "human_decision_required": false,
+      "status": "open"
+    },
+    {
+      "issue_id": "R01-002",
+      "severity": "high",
+      "criterion": "All factual claims must be supported.",
+      "finding": "The 18 % annual growth forecast has no cited source.",
+      "evidence": "Section 3.2",
+      "proposed_action": "Cite a dated source or remove the forecast.",
+      "human_decision_required": false,
+      "status": "open"
+    },
+    {
+      "issue_id": "R01-003",
+      "severity": "medium",
+      "criterion": "No unresolved Critical risks.",
+      "finding": "The mitigation has neither a named owner nor a specific completion date.",
+      "evidence": "Section 6: wage review in Q2 2027",
+      "proposed_action": "Name an accountable owner and completion date.",
+      "human_decision_required": true,
+      "status": "open"
+    }
+  ],
+  "criteria_results": [
+    {
+      "criterion": "All factual claims must be supported.",
+      "met": false,
+      "note": "Requires correction."
+    },
+    {
+      "criterion": "All totals must reconcile.",
+      "met": false,
+      "note": "Requires correction."
+    },
+    {
+      "criterion": "No unresolved Critical risks.",
+      "met": false,
+      "note": "Requires correction."
+    },
+    {
+      "criterion": "Maximum length: 8 pages.",
+      "met": true,
+      "note": "No exception identified in this review."
+    },
+    {
+      "criterion": "Tone: executive and concise.",
+      "met": true,
+      "note": "No exception identified in this review."
+    }
+  ]
+}

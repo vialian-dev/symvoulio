@@ -1,0 +1,70 @@
+{
+ "_comment": "Landscape banners with coordinated crops, captions and display settings.",
+ "_settings": {
+  "full_again_after_days": 7,
+  "collapse_after_ms": 3500,
+  "label_expand": "Show the banner",
+  "label_collapse": "Collapse the banner to its slogan"
+ },
+ "_places": {
+  "S11": {
+   "id": "SY01"
+  },
+  "S7": {
+   "id": "SY02",
+   "start": "strip"
+  },
+  "S9": {
+   "id": "SY03",
+   "start": "strip"
+  }
+ },
+ "SY01": {
+  "file": "SY01_reviews.png",
+  "slogan": "No model grades its own work. Verify. Then approve.",
+  "caption": {
+   "kicker": "No model grades its own work",
+   "title": "Verify. Then",
+   "accent": "approve."
+  },
+  "alt": "No model grades its own work: from snowy mountains a thread of work passes the author, then a separate independent reviewer, then a human approval, along a sunny shore with cypresses, and the line of value rises.",
+  "crop": [
+   0,
+   0.17,
+   1,
+   0.83
+  ]
+ },
+ "SY02": {
+  "file": "SY02_workspace.png",
+  "slogan": "No model grades its own work.",
+  "caption": {
+   "kicker": "One model writes · another reviews",
+   "title": "No model grades",
+   "accent": "its own work."
+  },
+  "alt": "Two separate streams, the author and the independent reviewer, take turns over three revisions that get cleaner each round, across a calm lake toward a stone terrace where the line of value rises.",
+  "crop": [
+   0,
+   0.17,
+   1,
+   0.83
+  ]
+ },
+ "SY03": {
+  "file": "SY03_decision.png",
+  "slogan": "Verify. Then approve. A human decides.",
+  "caption": {
+   "kicker": "Model agreement is evidence, not approval",
+   "title": "Verify. Then",
+   "accent": "approve."
+  },
+  "alt": "A verified document reaches the human decision: a document sealed with a wax seal and signed with a fountain pen on a stone terrace above the sea; then the line of value rises.",
+  "crop": [
+   0,
+   0.2,
+   1,
+   0.95
+  ]
+ }
+}

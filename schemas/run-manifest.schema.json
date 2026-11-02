@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://symvoulio.com/schemas/run-manifest.schema.json",
+  "title": "Symvoulio run manifest",
+  "description": "output/audit/run_manifest.json (spec 14). Written at the start of a run and rewritten after every round and after the human decision.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "run_id", "name", "created_at", "updated_at", "os", "app_version", "author", "reviewer", "inputs", "objective", "criteria", "policy", "rounds_completed", "state", "stop_reason", "human_decision"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "run_id": { "type": "string" },
+    "name": { "type": "string" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" },
+    "os": { "type": "string", "description": "e.g. windows x86_64" },
+    "app_version": { "type": "string" },
+    "author": { "$ref": "#/$defs/participant" },
+    "reviewer": { "$ref": "#/$defs/participant" },
+    "inputs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["file_name", "role", "bytes", "sha256", "extracted_chars"],
+        "properties": {
+          "file_name": { "type": "string" },
+          "role": { "enum": ["primary", "supporting"] },
+          "bytes": { "type": "integer", "minimum": 0 },
+          "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+          "extracted_chars": { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+    "objective": { "type": "string" },
+    "criteria": { "type": "array", "items": { "type": "string" } },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["max_rounds", "min_rounds", "contribution", "new_content_limit_pct", "stop"],
+      "properties": {
+        "max_rounds": { "type": "integer", "minimum": 1, "maximum": 5 },
+        "min_rounds": { "type": "integer", "minimum": 1, "maximum": 5 },
+        "contribution": { "enum": ["verify", "correct", "improve"] },
+        "new_content_limit_pct": { "type": "number", "minimum": 0, "maximum": 100 },
+        "stop": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["no_critical", "no_high", "no_new", "max_rounds"],
+          "properties": {
+            "no_critical": { "type": "boolean" },
+            "no_high": { "type": "boolean" },
+            "no_new": { "type": "boolean" },
+            "max_rounds": { "type": "boolean" }
+          }
+        }
+      }
+    },
+    "rounds_completed": { "type": "integer", "minimum": 0 },
+    "state": { "enum": ["running", "paused", "stopped", "completed", "approved", "rejected", "returned"] },
+    "stop_reason": {
+      "enum": ["gate_no_new_issues", "gate_clean", "gate_max_rounds", "gate_human_review_required", "user_stop", "provider_error", "cancelled", null]
+    },
+    "human_decision": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "name", "note", "at", "after_round", "revision", "document_sha256"],
+          "properties": {
+            "kind": { "enum": ["approved", "rejected", "returned"] },
+            "name": { "type": "string" },
+            "note": { "type": "string" },
+            "at": { "type": "string", "format": "date-time" },
+            "after_round": { "type": "integer", "minimum": 0 },
+            "revision": { "type": "integer", "minimum": 0 },
+            "document_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+          }
+        }
+      ]
+    }
+  },
+  "$defs": {
+    "participant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "cli_version", "model"],
+      "properties": {
+        "provider": { "enum": ["claude", "codex"] },
+        "cli_version": { "type": ["string", "null"] },
+        "model": { "type": ["string", "null"], "description": "As the CLI reported it; null when the CLI did not report one." }
+      }
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "changes_made": [
+    "Tightened the executive summary; no new claims."
+  ],
+  "human_decisions_required": [
+    {
+      "issue_id": "R01-001",
+      "question": "Who approves the capital budget?"
+    },
+    {
+      "issue_id": "R01-002",
+      "question": "Which currency do the totals use?"
+    }
+  ],
+  "new_claims": [],
+  "responses": []
+}

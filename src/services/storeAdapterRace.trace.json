@@ -1,0 +1,172 @@
+[
+  {
+    "time": "2026-10-31T11:07:32.403Z",
+    "alias": "run-mvwarclw",
+    "backendId": null,
+    "generation": null,
+    "revision": null,
+    "state": null,
+    "kind": "startRun",
+    "decision": "action received"
+  },
+  {
+    "time": "2026-10-31T11:07:34.235Z",
+    "alias": "20261031-110732-8e2810",
+    "backendId": "20261031-110732-8e2810",
+    "generation": null,
+    "revision": null,
+    "state": null,
+    "kind": "run-updated",
+    "decision": "received event"
+  },
+  {
+    "time": "2026-10-31T11:07:34.235Z",
+    "alias": "20261031-110732-8e2810",
+    "backendId": "20261031-110732-8e2810",
+    "generation": null,
+    "revision": null,
+    "state": null,
+    "kind": "run-updated",
+    "decision": "applied: refresh requested"
+  },
+  {
+    "time": "2026-10-31T11:07:34.235Z",
+    "alias": "run-mvwarclw",
+    "backendId": null,
+    "generation": null,
+    "revision": null,
+    "state": "running",
+    "kind": "state",
+    "decision": "received event"
+  },
+  {
+    "time": "2026-10-31T11:07:34.235Z",
+    "alias": "run-mvwarclw",
+    "backendId": null,
+    "generation": null,
+    "revision": null,
+    "state": null,
+    "kind": "state",
+    "decision": "deferred: backend id pending"
+  },
+  {
+    "time": "2026-10-31T11:07:34.332Z",
+    "alias": "20261031-110732-8e2810",
+    "backendId": "20261031-110732-8e2810",
+    "generation": null,
+    "revision": null,
+    "state": null,
+    "kind": "run-updated",
+    "decision": "received event"
+  },
+  {
+    "time": "2026-10-31T11:07:34.332Z",
+    "alias": "20261031-110732-8e2810",
+    "backendId": "20261031-110732-8e2810",
+    "generation": null,
+    "revision": null,
+    "state": null,
+    "kind": "run-updated",
+    "decision": "applied: refresh requested"
+  },
+  {
+    "time": "2026-10-31T11:07:34.333Z",
+    "alias": "run-mvwarclw",
+    "backendId": null,
+    "generation": null,
+    "revision": null,
+    "state": null,
+    "kind": "phase",
+    "decision": "received event"
+  },
+  {
+    "time": "2026-10-31T11:07:34.333Z",
+    "alias": "run-mvwarclw",
+    "backendId": null,
+    "generation": null,
+    "revision": null,
+    "state": null,
+    "kind": "phase",
+    "decision": "applied: event handled"
+  },
+  {
+    "time": "2026-10-31T11:07:34.353Z",
+    "alias": "20261031-110732-8e2810",
+    "backendId": "20261031-110732-8e2810",
+    "generation": 1,
+    "revision": 2,
+    "state": "running",
+    "kind": "snapshot",
+    "decision": "received"
+  },
+  {
+    "time": "2026-10-31T11:07:34.353Z",
+    "alias": "20261031-110732-8e2810",
+    "backendId": "20261031-110732-8e2810",
+    "generation": 1,
+    "revision": 2,
+    "state": "running",
+    "kind": "snapshot",
+    "decision": "applied"
+  },
+  {
+    "time": "2026-10-31T11:07:34.360Z",
+    "alias": "run-mvwarclw",
+    "backendId": "20261031-110732-8e2810",
+    "generation": 1,
+    "revision": 1,
+    "state": "running",
+    "kind": "alias",
+    "decision": "backend id bound"
+  },
+  {
+    "time": "2026-10-31T11:07:34.361Z",
+    "alias": "run-mvwarclw",
+    "backendId": "20261031-110732-8e2810",
+    "generation": 1,
+    "revision": 1,
+    "state": "running",
+    "kind": "snapshot",
+    "decision": "received"
+  },
+  {
+    "time": "2026-10-31T11:07:34.361Z",
+    "alias": "run-mvwarclw",
+    "backendId": "20261031-110732-8e2810",
+    "generation": 1,
+    "revision": 1,
+    "state": "running",
+    "kind": "snapshot",
+    "decision": "ignored: older snapshot; current=1/2; alias snapshot=false"
+  },
+  {
+    "time": "2026-10-31T11:07:34.361Z",
+    "alias": "run-mvwarclw",
+    "backendId": "20261031-110732-8e2810",
+    "generation": 1,
+    "revision": 2,
+    "state": "running",
+    "kind": "alias",
+    "decision": "backend duplicate removed; alias row=true; alias snapshot=false"
+  },
+  {
+    "time": "2026-10-31T11:07:34.479Z",
+    "alias": "run-mvwarclw",
+    "backendId": "20261031-110732-8e2810",
+    "generation": 1,
+    "revision": 2,
+    "state": "running",
+    "kind": "snapshot",
+    "decision": "received"
+  },
+  {
+    "time": "2026-10-31T11:07:34.479Z",
+    "alias": "run-mvwarclw",
+    "backendId": "20261031-110732-8e2810",
+    "generation": 1,
+    "revision": 2,
+    "state": "running",
+    "kind": "snapshot",
+    "decision": "applied"
+  }
+]

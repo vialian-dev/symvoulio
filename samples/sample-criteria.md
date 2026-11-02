@@ -1,0 +1,5 @@
+- All factual claims must be supported.
+- All totals must reconcile.
+- No unresolved Critical risks.
+- Maximum length: 8 pages.
+- Tone: executive and concise.

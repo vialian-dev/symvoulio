@@ -1,0 +1,444 @@
+{
+  "appInfo": {
+    "arch": "fixture-arch",
+    "os": "fixture-os",
+    "version": "0.2.0"
+  },
+  "decisionResult": {
+    "author": "claude",
+    "counts": {
+      "critical": 1,
+      "high": 2,
+      "low": 4,
+      "medium": 3
+    },
+    "createdAt": "2026-10-30T00:00:00Z",
+    "criteria": [
+      "Accuracy"
+    ],
+    "decision": {
+      "after_round": 1,
+      "at": "2026-10-30T00:00:00Z",
+      "document_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "kind": "returned",
+      "name": "Reviewer",
+      "note": "keep_my_text",
+      "revision": 1
+    },
+    "decisionLog": [
+      {
+        "after_round": 1,
+        "at": "2026-10-30T00:00:00Z",
+        "document_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "kind": "returned",
+        "name": "Reviewer",
+        "note": "keep_my_text",
+        "revision": 1
+      }
+    ],
+    "documents": [
+      "# Original\n\nkeep_my_text",
+      "# Revised"
+    ],
+    "generation": 2,
+    "humanQuestions": [
+      {
+        "answer": null,
+        "answeredAt": null,
+        "answeredBy": null,
+        "issue_id": "R01-099",
+        "question": "Who owns this?",
+        "resolved": false,
+        "round": 1
+      }
+    ],
+    "id": "wire-run",
+    "issues": [
+      {
+        "authorResponses": [
+          {
+            "evidence": "Source",
+            "explanation": "keep_my_text",
+            "response": "rejected_with_evidence",
+            "round": 1
+          }
+        ],
+        "history": [
+          {
+            "finding": "Check total",
+            "round": 1,
+            "severity": "critical",
+            "status": "open"
+          }
+        ],
+        "humanDecision": {
+          "choice": "keep",
+          "issue_id": "I-1",
+          "note": "Known risk",
+          "round": 1
+        },
+        "issue": {
+          "criterion": "Accuracy",
+          "evidence": "Source",
+          "finding": "Check total",
+          "human_decision_required": true,
+          "issue_id": "I-1",
+          "proposed_action": "Correct total",
+          "severity": "critical",
+          "status": "open"
+        },
+        "raisedIn": 1
+      }
+    ],
+    "lastError": {
+      "kind": "auth",
+      "message": "Retry",
+      "provider": "codex"
+    },
+    "name": "Wire check",
+    "objective": "Check wire",
+    "outputTree": [
+      "final/final_document.md"
+    ],
+    "pendingRevision": null,
+    "phase": null,
+    "policy": {
+      "contribution": "correct",
+      "max_rounds": 5,
+      "min_rounds": 2,
+      "new_content_limit_pct": 10.0,
+      "stop": {
+        "max_rounds": true,
+        "no_critical": true,
+        "no_high": true,
+        "no_new": true
+      }
+    },
+    "primaryName": "input.md",
+    "publication": "incomplete",
+    "reviewer": "codex",
+    "revision": 17,
+    "rounds": [
+      {
+        "authorModel": "fake-author",
+        "authorUsage": {
+          "cache_creation_tokens": 5,
+          "cache_read_tokens": 10,
+          "input_tokens": 100,
+          "output_tokens": 20
+        },
+        "contributionExceeded": true,
+        "gate": {
+          "counts": {
+            "critical": 1,
+            "high": 2,
+            "low": 4,
+            "medium": 3
+          },
+          "kind": "stopped",
+          "reason": "stopped_human"
+        },
+        "newTextPct": 12.5,
+        "reviewerModel": "fake-reviewer",
+        "reviewerUsage": {
+          "cache_creation_tokens": null,
+          "cache_read_tokens": 0,
+          "input_tokens": 200,
+          "output_tokens": 30
+        },
+        "round": 1
+      }
+    ],
+    "roundsDone": 1,
+    "state": "returned",
+    "stopReason": "gate_human_review_required",
+    "supportingNames": [
+      "source.md"
+    ]
+  },
+  "detection": {
+    "connected": true,
+    "error": null,
+    "installed": true,
+    "method": "api_key",
+    "provider": "claude",
+    "status_exit_code": 0,
+    "version": "fake-1.0"
+  },
+  "events": [
+    {
+      "at": "2026-10-30T00:00:00Z",
+      "kind": "line",
+      "provider": "claude",
+      "raw": "keep_my_text",
+      "role": "author",
+      "summary": "assistant: assistant text, 2 words"
+    },
+    {
+      "kind": "phase",
+      "phase": "review",
+      "provider": "codex",
+      "role": "reviewer",
+      "round": 1
+    },
+    {
+      "contributionExceeded": true,
+      "gate": {
+        "counts": {
+          "critical": 1,
+          "high": 2,
+          "low": 4,
+          "medium": 3
+        },
+        "kind": "stopped",
+        "reason": "stopped_human"
+      },
+      "kind": "roundCompleted",
+      "newTextPct": 12.5,
+      "round": 1
+    },
+    {
+      "kind": "state",
+      "state": "stopped",
+      "stopReason": "user_stop"
+    },
+    {
+      "errorKind": "auth",
+      "kind": "providerError",
+      "message": "Retry",
+      "provider": "codex",
+      "role": "reviewer"
+    }
+  ],
+  "exportResult": {
+    "path": "wire-workspace/export",
+    "tree": [
+      "final/final_document.md"
+    ]
+  },
+  "restartInput": {
+    "primaryName": "revision_01.md",
+    "primaryToken": "revision",
+    "supportingNames": [
+      "source.csv"
+    ],
+    "supportingTokens": [
+      "source"
+    ]
+  },
+  "runSnapshot": {
+    "author": "claude",
+    "counts": {
+      "critical": 1,
+      "high": 2,
+      "low": 4,
+      "medium": 3
+    },
+    "createdAt": "2026-10-30T00:00:00Z",
+    "criteria": [
+      "Accuracy"
+    ],
+    "decision": {
+      "after_round": 1,
+      "at": "2026-10-30T00:00:00Z",
+      "document_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "kind": "returned",
+      "name": "Reviewer",
+      "note": "keep_my_text",
+      "revision": 1
+    },
+    "decisionLog": [
+      {
+        "after_round": 1,
+        "at": "2026-10-30T00:00:00Z",
+        "document_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "kind": "returned",
+        "name": "Reviewer",
+        "note": "keep_my_text",
+        "revision": 1
+      }
+    ],
+    "documents": [
+      "# Original\n\nkeep_my_text",
+      "# Revised"
+    ],
+    "generation": 2,
+    "humanQuestions": [
+      {
+        "answer": null,
+        "answeredAt": null,
+        "answeredBy": null,
+        "issue_id": "R01-099",
+        "question": "Who owns this?",
+        "resolved": false,
+        "round": 1
+      }
+    ],
+    "id": "wire-run",
+    "issues": [
+      {
+        "authorResponses": [
+          {
+            "evidence": "Source",
+            "explanation": "keep_my_text",
+            "response": "rejected_with_evidence",
+            "round": 1
+          }
+        ],
+        "history": [
+          {
+            "finding": "Check total",
+            "round": 1,
+            "severity": "critical",
+            "status": "open"
+          }
+        ],
+        "humanDecision": {
+          "choice": "keep",
+          "issue_id": "I-1",
+          "note": "Known risk",
+          "round": 1
+        },
+        "issue": {
+          "criterion": "Accuracy",
+          "evidence": "Source",
+          "finding": "Check total",
+          "human_decision_required": true,
+          "issue_id": "I-1",
+          "proposed_action": "Correct total",
+          "severity": "critical",
+          "status": "open"
+        },
+        "raisedIn": 1
+      }
+    ],
+    "lastError": {
+      "kind": "auth",
+      "message": "Retry",
+      "provider": "codex"
+    },
+    "name": "Wire check",
+    "objective": "Check wire",
+    "outputTree": [
+      "final/final_document.md"
+    ],
+    "pendingRevision": null,
+    "phase": null,
+    "policy": {
+      "contribution": "correct",
+      "max_rounds": 5,
+      "min_rounds": 2,
+      "new_content_limit_pct": 10.0,
+      "stop": {
+        "max_rounds": true,
+        "no_critical": true,
+        "no_high": true,
+        "no_new": true
+      }
+    },
+    "primaryName": "input.md",
+    "reviewer": "codex",
+    "revision": 17,
+    "rounds": [
+      {
+        "authorModel": "fake-author",
+        "authorUsage": {
+          "cache_creation_tokens": 5,
+          "cache_read_tokens": 10,
+          "input_tokens": 100,
+          "output_tokens": 20
+        },
+        "contributionExceeded": true,
+        "gate": {
+          "counts": {
+            "critical": 1,
+            "high": 2,
+            "low": 4,
+            "medium": 3
+          },
+          "kind": "stopped",
+          "reason": "stopped_human"
+        },
+        "newTextPct": 12.5,
+        "reviewerModel": "fake-reviewer",
+        "reviewerUsage": {
+          "cache_creation_tokens": null,
+          "cache_read_tokens": 0,
+          "input_tokens": 200,
+          "output_tokens": 30
+        },
+        "round": 1
+      }
+    ],
+    "roundsDone": 1,
+    "state": "returned",
+    "stopReason": "gate_human_review_required",
+    "supportingNames": [
+      "source.md"
+    ]
+  },
+  "runSummary": {
+    "createdAt": "2026-10-30T00:00:00Z",
+    "id": "wire-run",
+    "name": "Wire check",
+    "roundsDone": 1,
+    "runDir": "wire-workspace/runs/wire-run",
+    "state": "returned"
+  },
+  "settings": {
+    "author": "claude",
+    "policy": {
+      "contribution": "correct",
+      "max_rounds": 5,
+      "min_rounds": 2,
+      "new_content_limit_pct": 10.0,
+      "stop": {
+        "max_rounds": true,
+        "no_critical": true,
+        "no_high": true,
+        "no_new": true
+      }
+    },
+    "shell": {
+      "claude": "pwsh",
+      "codex": null
+    },
+    "workspace": "wire-workspace"
+  },
+  "shell": {
+    "claude": "pwsh",
+    "codex": null
+  },
+  "stagedFile": {
+    "chars": 40,
+    "error": null,
+    "kind": "md",
+    "name": "input.md",
+    "size": 42,
+    "token": "primary"
+  },
+  "startInput": {
+    "author": "claude",
+    "criteria": [
+      "Accuracy"
+    ],
+    "name": "Wire check",
+    "objective": "Check wire",
+    "policy": {
+      "contribution": "correct",
+      "max_rounds": 5,
+      "min_rounds": 2,
+      "new_content_limit_pct": 10.0,
+      "stop": {
+        "max_rounds": true,
+        "no_critical": true,
+        "no_high": true,
+        "no_new": true
+      }
+    },
+    "primaryToken": "primary",
+    "supportingTokens": [
+      "support"
+    ]
+  }
+}

@@ -1,0 +1,75 @@
+{
+ "frame": {
+  "navigation": "Navigation",
+  "sectionsFor": "Sections for role: {{role}}",
+  "allScreens": "All screens",
+  "search": "Search clients and documents",
+  "searchShort": "Search",
+  "breadcrumbs": "Breadcrumbs",
+  "agent": "Agent",
+  "role": "Role",
+  "language": "Language",
+  "theme": "Theme",
+  "prototypeOnly": "Prototype only",
+  "myQueue": "My queue",
+  "project": "Client"
+ },
+ "lang": {
+  "pseudo": "Pseudo"
+ },
+ "common": {
+  "close": "Close"
+ },
+ "role": {
+  "accountant": "Accountant",
+  "partner": "Partner"
+ },
+ "nav": {
+  "home": "Clients"
+ },
+ "home": {
+  "caption": "Clients · documents · deadlines",
+  "title": "Clients",
+  "fees": "Fees this month",
+  "feesWhy": "Sum of invoices issued this month",
+  "docs": "Documents waiting",
+  "docsWhy": "Documents uploaded and not yet reviewed",
+  "empty": "No deadlines this week.",
+  "client": "Client",
+  "due": "Due",
+  "clients_one": "{{count}} client",
+  "clients_other": "{{count}} clients"
+ },
+ "banner": {
+  "slogan": "Every number explains itself."
+ },
+ "a1": {
+  "try": "Try",
+  "send": "Send",
+  "placeholder": "Ask the agent"
+ },
+ "a2": {
+  "caption": "Change preview",
+  "before": "Before",
+  "after": "After",
+  "yes": "Yes, apply",
+  "no": "No",
+  "journal": "Journal",
+  "journalNote": "Every change goes to the journal and can be rolled back.",
+  "rollback": "Roll back"
+ },
+ "access": {
+  "readOnly": "Read only",
+  "deniedCaption": "No access",
+  "deniedTitle": "This screen is not open to your role",
+  "deniedText": "Ask an administrator for the right."
+ },
+ "all": {
+  "caption": "{{n}} screens",
+  "intro": "Every screen; the menu of {{role}} shows only its sections.",
+  "open": "Open",
+  "inMenu": "In the menu",
+  "byLink": "By link",
+  "noRight": "No right"
+ }
+}

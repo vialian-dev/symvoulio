@@ -1,0 +1,34 @@
+{
+  "revised_document": "",
+  "changes_made": [
+    "Used the study's growth figure, added lease savings to Table 3, recalculated payback."
+  ],
+  "responses": [
+    {
+      "issue_id": "R01-002",
+      "response": "accepted",
+      "explanation": "Replaced 18 % with the study's 11 % and cited Table 4.",
+      "evidence": "Section 3.2"
+    },
+    {
+      "issue_id": "R01-003",
+      "response": "accepted",
+      "explanation": "Added the lease savings to Table 3; payback recalculated as 2.3 years.",
+      "evidence": "Section 5, Table 3"
+    },
+    {
+      "issue_id": "R01-005",
+      "response": "human_decision_required",
+      "explanation": "No newer public source was found. Keeping the 2019 figure is a business decision.",
+      "evidence": "Section 2.1"
+    },
+    {
+      "issue_id": "R01-006",
+      "response": "partially_accepted",
+      "explanation": "Added a mitigation; the owner is to be confirmed by Operations.",
+      "evidence": "Section 6, Risks"
+    }
+  ],
+  "new_claims": [],
+  "human_decisions_required": []
+}

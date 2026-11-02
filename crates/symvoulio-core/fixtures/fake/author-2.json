@@ -1,0 +1,46 @@
+{
+  "revised_document": "",
+  "changes_made": [
+    "Fixed the capital cost in the summary, sourced the forecast, added a risk mitigation."
+  ],
+  "responses": [
+    {
+      "issue_id": "R01-001",
+      "response": "accepted",
+      "explanation": "Corrected the summary to $4.6M; Table 2 was right.",
+      "evidence": "Section 4, Table 2 vs. Executive summary, paragraph 1"
+    },
+    {
+      "issue_id": "R01-002",
+      "response": "partially_accepted",
+      "explanation": "Linked the forecast to the 2026 Ohio Regional Freight Study; 18 % is our own extrapolation of it.",
+      "evidence": "Section 3.2"
+    },
+    {
+      "issue_id": "R01-003",
+      "response": "rejected_with_evidence",
+      "explanation": "Table 3 excludes the lease savings of Section 4.3; with them the payback is 2.1 years.",
+      "evidence": "Section 5, Table 3"
+    },
+    {
+      "issue_id": "R01-004",
+      "response": "accepted",
+      "explanation": "Shortened the summary to four sentences.",
+      "evidence": "Executive summary"
+    },
+    {
+      "issue_id": "R01-005",
+      "response": "human_decision_required",
+      "explanation": "No newer public source was found. Keeping the 2019 figure is a business decision.",
+      "evidence": "Section 2.1"
+    },
+    {
+      "issue_id": "R01-006",
+      "response": "partially_accepted",
+      "explanation": "Added a mitigation; the owner is to be confirmed by Operations.",
+      "evidence": "Section 6, Risks"
+    }
+  ],
+  "new_claims": [],
+  "human_decisions_required": []
+}

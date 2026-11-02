@@ -1,0 +1,41 @@
+{
+  "revised_document": "# Northwind Logistics: Midwest Hub Expansion \u2014 Business Case\n\n## Executive summary\n\nNorthwind Logistics proposes to open a cross-dock hub in Columbus, Ohio, to serve customers in Ohio, Indiana and Michigan. The hub replaces two leased depots whose leases end in 2027 and lets us consolidate less-than-truckload shipments that today travel through Chicago. We have looked carefully at a range of options over the past year and we believe this proposal represents the best balance between cost, service and risk for the company. The total capital cost is $4.2M. Shipment volume through the hub is expected to grow 18 % per year, and the investment pays back in 2.1 years.\n\n## 1. Background\n\nNorthwind moves 2,400 less-than-truckload shipments a week in the Midwest. About 40 % of them pass through the Chicago terminal even when origin and destination are both east of Indianapolis, which adds a day to transit and $38 per shipment in linehaul cost.\n\n## 2. Market\n\n2.1 The Midwest less-than-truckload market was worth $9.8B (Freight Analytics, 2019). Our share is 1.6 %.\n\n## 3. Demand forecast\n\n3.2 We expect shipment volume through the hub to grow 18 % per year from 2027 to 2031, driven by e-commerce growth across the three states.\n\n## 4. Capital cost\n\nTable 2. Land and building $2.9M \u00b7 Racking and dock equipment $1.1M \u00b7 IT and systems $0.6M \u00b7 Total $4.6M.\n\n4.3 The two depot leases that end in 2027 cost $0.5M per year together; the hub removes them.\n\n## 5. Financial return\n\nTable 3. Net annual cash flow: Year 1 $1.2M \u00b7 Year 2 $1.7M \u00b7 Year 3 $2.0M. Payback period: 2.1 years.\n\n## 6. Risks\n\nLabour availability: the Columbus warehouse labour market is tight. Mitigation: wage review in Q2 2027.\n",
+  "changes_made": [
+    "Retained the baseline pending source verification."
+  ],
+  "responses": [
+    {
+      "issue_id": "R01-001",
+      "response": "human_decision_required",
+      "explanation": "The source owner must verify this before a factual change is made.",
+      "evidence": ""
+    },
+    {
+      "issue_id": "R01-002",
+      "response": "human_decision_required",
+      "explanation": "The source owner must verify this before a factual change is made.",
+      "evidence": ""
+    },
+    {
+      "issue_id": "R01-003",
+      "response": "human_decision_required",
+      "explanation": "The source owner must verify this before a factual change is made.",
+      "evidence": ""
+    }
+  ],
+  "new_claims": [],
+  "human_decisions_required": [
+    {
+      "issue_id": "R01-001",
+      "question": "Reconcile the total against the capital estimate."
+    },
+    {
+      "issue_id": "R01-002",
+      "question": "Cite a dated source or remove the forecast."
+    },
+    {
+      "issue_id": "R01-003",
+      "question": "Name an accountable owner and completion date."
+    }
+  ]
+}

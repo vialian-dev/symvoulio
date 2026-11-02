@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://symvoulio.com/schemas/review.schema.json",
+  "title": "Symvoulio independent review",
+  "description": "What the Independent Reviewer returns for one revision (spec 12, step 2). Strict form: every property is required and no other property is allowed, so the same file works as `codex exec --output-schema` and `claude -p --json-schema`. An issue that is still open in this revision keeps the issue_id it had in an earlier review; a new issue gets a new id R<round>-<nnn>.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["summary", "issues", "criteria_results"],
+  "properties": {
+    "summary": { "type": "string", "description": "Two or three sentences on the state of this revision." },
+    "issues": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["issue_id", "severity", "criterion", "finding", "evidence", "proposed_action", "human_decision_required", "status"],
+        "properties": {
+          "issue_id": { "type": "string", "pattern": "^R[0-9]{2}-[0-9]{3}$" },
+          "severity": { "type": "string", "enum": ["critical", "high", "medium", "low"] },
+          "criterion": { "type": "string", "description": "The acceptance criterion this issue fails, quoted." },
+          "finding": { "type": "string" },
+          "evidence": { "type": "string", "description": "Where in the revision: section, paragraph or quote." },
+          "proposed_action": { "type": "string" },
+          "human_decision_required": { "type": "boolean" },
+          "status": { "type": "string", "enum": ["open", "resolved"], "description": "resolved: an issue fixed in this revision, including a new finding reported already resolved." }
+        }
+      }
+    },
+    "criteria_results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["criterion", "met", "note"],
+        "properties": {
+          "criterion": { "type": "string" },
+          "met": { "type": "boolean" },
+          "note": { "type": "string" }
+        }
+      }
+    }
+  }
+}

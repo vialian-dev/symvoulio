@@ -1,0 +1,14 @@
+{
+  "name": "@symvoulio/ui-example",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -p tsconfig.json --noEmit && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@symvoulio/ui": "*"
+  }
+}

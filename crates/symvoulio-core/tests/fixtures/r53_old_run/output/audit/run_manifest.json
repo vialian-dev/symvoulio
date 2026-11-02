@@ -1,0 +1,48 @@
+{
+  "app_version": "0.1.0",
+  "author": {
+    "cli_version": "2.1.309 (Claude Code)",
+    "model": "claude-fake-1",
+    "provider": "claude"
+  },
+  "created_at": "2026-10-31T22:03:53Z",
+  "criteria": [
+    "All totals must reconcile."
+  ],
+  "human_decision": null,
+  "inputs": [
+    {
+      "bytes": 44,
+      "extracted_chars": 44,
+      "file_name": "business.md",
+      "role": "primary",
+      "sha256": "eaccd1c117fed2a6ec9ad4da2c9625bcd75e54dfa31be26160858a16357716ac"
+    }
+  ],
+  "name": "r53 old",
+  "objective": "Improve for executive review",
+  "os": "windows x86_64",
+  "policy": {
+    "contribution": "correct",
+    "max_rounds": 1,
+    "min_rounds": 1,
+    "new_content_limit_pct": 100.0,
+    "stop": {
+      "max_rounds": true,
+      "no_critical": true,
+      "no_high": true,
+      "no_new": true
+    }
+  },
+  "reviewer": {
+    "cli_version": "codex-cli 0.165.0",
+    "model": null,
+    "provider": "codex"
+  },
+  "rounds_completed": 1,
+  "run_id": "r53-old",
+  "schema_version": 1,
+  "state": "stopped",
+  "stop_reason": "gate_human_review_required",
+  "updated_at": "2026-10-31T22:03:54Z"
+}

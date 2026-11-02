@@ -1,0 +1,22 @@
+{
+  "revised_document": "",
+  "changes_made": [
+    "Named the owner of the labour risk mitigation."
+  ],
+  "responses": [
+    {
+      "issue_id": "R01-005",
+      "response": "human_decision_required",
+      "explanation": "No newer public source was found. Keeping the 2019 figure is a business decision.",
+      "evidence": "Section 2.1"
+    },
+    {
+      "issue_id": "R01-006",
+      "response": "accepted",
+      "explanation": "Named the Director of Operations as owner, due 30 June 2027.",
+      "evidence": "Section 6, Risks"
+    }
+  ],
+  "new_claims": [],
+  "human_decisions_required": []
+}
