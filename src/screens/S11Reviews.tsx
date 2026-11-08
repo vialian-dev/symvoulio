@@ -16,6 +16,7 @@ import { Page } from '../components/Page'
 import { Dialog, DialogClose, DialogContent } from '../components/ui/dialog'
 import { other } from '../data/sample'
 import { deleteRun, openSample, useStore, type Run, type RunState } from '../state/store'
+import { shortDate } from '../lib/runDate'
 
 export const STATE_BADGE: Record<RunState, 'plain' | 'accent' | 'value' | 'flag' | 'ok'> = {
   failed: 'flag', running: 'ok', paused: 'value', stopped: 'flag', completed: 'accent', approved: 'ok', rejected: 'flag', returned: 'value',
@@ -24,8 +25,7 @@ export function StateBadge({ run }: { run: Run }) {
   const { t } = useTranslation()
   return <Badge tone={STATE_BADGE[run.state]} className="text-[11.5px]"><span data-testid="run-state">{t(`runState.${run.state}`)}</span></Badge>
 }
-/** One-line date of a run in UTC: «Oct 30, 19:56» (the full date and zone in its tooltip). */
-const shortDate = (iso: string) => new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZone: 'UTC' }).format(new Date(iso))
+// The run date is `shortDate` (lib/runDate): «Oct 30, 19:56» on every engine, the full date and zone in its tooltip (F8).
 export const fileSize = (n: number) => (n >= 1_000_000 ? `${fmt.num(n / 1_000_000, 1)} MB` : n >= 1000 ? `${fmt.num(n / 1000, 0)} KB` : `${n} B`)
 
 export function Reviews() {

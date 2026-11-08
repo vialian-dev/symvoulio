@@ -377,8 +377,9 @@ pub fn shell_info() -> Result<ShellInfo, String> {
         } else {
             "powershell".into()
         }
-    } else if cfg!(target_os = "macos") && available.iter().any(|s| s == "zsh") {
-        "zsh".into()
+    } else if cfg!(target_os = "macos") {
+        // VAL.5: the user's login zsh; without zsh, bash as a login shell (see `bash_rc`).
+        mac_shell(&available)
     } else {
         std::env::var("SHELL")
             .ok()
@@ -399,6 +400,101 @@ pub fn shell_info() -> Result<ShellInfo, String> {
         available,
     })
 }
+/// macOS panel shell (VAL.5): zsh, else bash, else sh — never the PowerShell family by default.
+pub fn mac_shell(available: &[String]) -> String {
+    ["zsh", "bash", "sh"]
+        .into_iter()
+        .find(|shell| available.iter().any(|a| a == shell))
+        .unwrap_or_default()
+        .into()
+}
+/// Start-up file for a bash panel. `login` reproduces `bash -l` (VAL.5, macOS): /etc/profile, then the first of
+/// ~/.bash_profile, ~/.bash_login, ~/.profile — where Homebrew and installers put PATH on macOS — and
+/// ~/.bash_logout when the shell exits. Otherwise (Linux) the interactive ~/.bashrc, as before. Either way the
+/// prompt hook reports each command's exit code.
+///
+/// bash ignores `--rcfile` in a login shell, and the prompt hook needs it, so the login files are read the way
+/// VS Code's terminal does («Imitate -l because --init-file doesn't support it», shellIntegration-bash.sh in
+/// microsoft/vscode, read 2026-11-05). `shopt login_shell` therefore reports off; the login environment is the same.
+pub fn bash_rc(login: bool) -> String {
+    let startup = if login {
+        r#"[ ! -r /etc/profile ] || . /etc/profile
+if [ -r "$HOME/.bash_profile" ]; then . "$HOME/.bash_profile"
+elif [ -r "$HOME/.bash_login" ]; then . "$HOME/.bash_login"
+elif [ -r "$HOME/.profile" ]; then . "$HOME/.profile"
+fi
+# ~/.bash_logout at exit, then any EXIT trap the login files set (kept, not replaced), with the shell's exit status.
+__symvoulio_user_exit=
+if [ -n "$(trap -p EXIT)" ]; then
+  __symvoulio_read_trap() { __symvoulio_user_exit=$3; }
+  eval "__symvoulio_read_trap $(trap -p EXIT)"
+  unset -f __symvoulio_read_trap
+fi
+# Both see the shell's exit status in $?, restored just before each by `(exit "$c") && :`, a form that neither
+# set -e nor an ERR trap acts on (a bare `(exit 7)` would end the handler under set -e).
+trap '__symvoulio_c=$?; if [ -r "$HOME/.bash_logout" ]; then (exit "$__symvoulio_c") && :; . "$HOME/.bash_logout"; fi; (exit "$__symvoulio_c") && :; eval "$__symvoulio_user_exit"; exit "$__symvoulio_c"' EXIT
+"#
+    } else {
+        r#"[ ! -f "$HOME/.bashrc" ] || . "$HOME/.bashrc"
+"#
+    };
+    format!(
+        "{startup}{}",
+        r#"__symvoulio_prompt() { local c=$?; printf '\033]133;D;%s;%s\007' "$SYMVOULIO_PROMPT_TOKEN" "$c"; }
+if declare -p PROMPT_COMMAND 2>/dev/null | grep -q 'declare -a'; then
+  PROMPT_COMMAND=(__symvoulio_prompt "${PROMPT_COMMAND[@]}")
+else
+  PROMPT_COMMAND="__symvoulio_prompt${PROMPT_COMMAND:+; $PROMPT_COMMAND}"
+fi
+"#
+    )
+}
+/// Start-up hooks for a zsh or bash panel on macOS and Linux: the user's own start-up files, then the prompt hook
+/// that reports each command's exit code (OSC 133 D). zsh runs as `zsh -l -i` (VAL.5); bash runs interactive and
+/// reads the login files on macOS (`bash_rc`). The returned folder must outlive the shell.
+pub fn unix_shell_hooks(command: &mut CommandBuilder, shell: &str) -> Result<tempfile::TempDir, String> {
+    let name = std::path::Path::new(shell).file_name().and_then(|s| s.to_str()).unwrap_or(shell);
+    // tempfile atomically creates a random directory with mode 0700 on Unix.
+    let hook_dir = tempfile::Builder::new().prefix("symvoulio-shell-").tempdir().map_err(|e| e.to_string())?;
+    let hooks = hook_dir.path();
+    if name == "bash" {
+        let rc = hooks.join("bashrc");
+        std::fs::write(&rc, bash_rc(cfg!(target_os = "macos"))).map_err(|e| e.to_string())?;
+        command.arg("--rcfile"); command.arg(rc); command.arg("-i");
+    } else if name == "zsh" {
+        for file in [".zshenv", ".zprofile"] {
+            std::fs::write(hooks.join(file), format!(r#"__symvoulio_hooks=$ZDOTDIR
+if [[ $SYMVOULIO_ZDOTDIR_SET == 1 ]]; then
+  export ZDOTDIR=$SYMVOULIO_ORIGINAL_ZDOTDIR
+else
+  unset ZDOTDIR
+fi
+[[ ! -f "$SYMVOULIO_ORIGINAL_ZDOTDIR/{file}" ]] || source "$SYMVOULIO_ORIGINAL_ZDOTDIR/{file}"
+# Startup files may intentionally redirect (or unset) ZDOTDIR. Carry that
+# setting to the next original startup file and restore it in .zshrc.
+if (( ${{+ZDOTDIR}} )); then
+  export SYMVOULIO_ORIGINAL_ZDOTDIR=$ZDOTDIR SYMVOULIO_ZDOTDIR_SET=1
+else
+  export SYMVOULIO_ORIGINAL_ZDOTDIR=$HOME SYMVOULIO_ZDOTDIR_SET=0
+fi
+ZDOTDIR=$__symvoulio_hooks
+"#)).map_err(|e| e.to_string())?;
+        }
+        command.env("SYMVOULIO_ZDOTDIR_SET", if std::env::var_os("ZDOTDIR").is_some() { "1" } else { "0" });
+        std::fs::write(hooks.join(".zshrc"), r#"if [[ $SYMVOULIO_ZDOTDIR_SET == 1 ]]; then
+  export ZDOTDIR=$SYMVOULIO_ORIGINAL_ZDOTDIR
+else
+  unset ZDOTDIR
+fi
+[[ ! -f "$SYMVOULIO_ORIGINAL_ZDOTDIR/.zshrc" ]] || source "$SYMVOULIO_ORIGINAL_ZDOTDIR/.zshrc"
+__symvoulio_precmd() { local c=$?; printf '\033]133;D;%s;%s\007' "$SYMVOULIO_PROMPT_TOKEN" "$c"; }
+precmd_functions=(__symvoulio_precmd $precmd_functions)
+"#).map_err(|e| e.to_string())?;
+        command.env("SYMVOULIO_ORIGINAL_ZDOTDIR", std::env::var_os("ZDOTDIR").unwrap_or(home_directory()?.into_os_string()));
+        command.env("ZDOTDIR", hooks); command.args(["-l", "-i"]);
+    }
+    Ok(hook_dir)
+}
 fn choose_shell(saved: Option<&str>, info: &ShellInfo) -> Result<String, String> {
     match saved {
         Some("pwsh") if info.pwsh => Ok("pwsh".into()),
@@ -418,8 +514,31 @@ fn choose_shell(saved: Option<&str>, info: &ShellInfo) -> Result<String, String>
 fn home_directory() -> Result<PathBuf, String> {
     std::env::home_dir().ok_or_else(|| "Cannot locate the user's home directory".into())
 }
+/// The folder a new panel shell starts in. Windows, as before: the requested folder, else the user's home. macOS and
+/// Linux (F3): the requested folder, else the app's own workspace (created when missing), so a provider CLI started in
+/// the panel asks to trust the workspace, never the user's whole home. An unusable workspace is an error the panel
+/// shows; it never falls back to the home folder (review r1).
+pub fn panel_cwd(requested: Option<String>, workspace: Result<PathBuf, String>, home: PathBuf) -> Result<PathBuf, String> {
+    if let Some(path) = requested.map(PathBuf::from).filter(|p| p.is_dir()) {
+        return Ok(path);
+    }
+    if cfg!(windows) {
+        let _ = workspace;
+        return Ok(home);
+    }
+    let _ = home;
+    let workspace = workspace.map_err(|e| format!("Cannot read the workspace folder from the settings: {e}"))?;
+    if !workspace.is_absolute() {
+        return Err(format!("The workspace folder must be an absolute path (Settings): {}", workspace.display()));
+    }
+    std::fs::create_dir_all(&workspace).map_err(|e| format!("Cannot open the workspace folder {} (Settings): {e}", workspace.display()))?;
+    Ok(workspace)
+}
+// A Tauri command: each argument is one IPC field or managed state (0.3.1 added the settings state for F3).
+#[allow(clippy::too_many_arguments)]
 #[tauri::command]
 pub fn pty_open(
+    state: State<'_, crate::commands::AppState>,
     manager: State<'_, PtyManager>,
     panel: String,
     cwd: Option<String>,
@@ -476,60 +595,8 @@ pub fn pty_open(
         command.env(key, value);
     }
     command.env("PATH", symvoulio_core::cli::panel_path());
-    let mut hook_dir = None;
-    if !cfg!(windows) {
-        let name = std::path::Path::new(&shell).file_name().and_then(|s| s.to_str()).unwrap_or(&shell);
-        // tempfile atomically creates a random directory with mode 0700 on Unix.
-        hook_dir = Some(tempfile::Builder::new().prefix("symvoulio-shell-").tempdir().map_err(|e| e.to_string())?);
-        let hooks = hook_dir.as_ref().expect("created hook directory").path();
-        if name == "bash" {
-            let rc = hooks.join("bashrc");
-            std::fs::write(&rc, r#"[ ! -f "$HOME/.bashrc" ] || . "$HOME/.bashrc"
-__symvoulio_prompt() { local c=$?; printf '\033]133;D;%s;%s\007' "$SYMVOULIO_PROMPT_TOKEN" "$c"; }
-if declare -p PROMPT_COMMAND 2>/dev/null | grep -q 'declare -a'; then
-  PROMPT_COMMAND=(__symvoulio_prompt "${PROMPT_COMMAND[@]}")
-else
-  PROMPT_COMMAND="__symvoulio_prompt${PROMPT_COMMAND:+; $PROMPT_COMMAND}"
-fi
-"#).map_err(|e| e.to_string())?;
-            command.arg("--rcfile"); command.arg(rc); command.arg("-i");
-        } else if name == "zsh" {
-            for file in [".zshenv", ".zprofile"] {
-                std::fs::write(hooks.join(file), format!(r#"__symvoulio_hooks=$ZDOTDIR
-if [[ $SYMVOULIO_ZDOTDIR_SET == 1 ]]; then
-  export ZDOTDIR=$SYMVOULIO_ORIGINAL_ZDOTDIR
-else
-  unset ZDOTDIR
-fi
-[[ ! -f "$SYMVOULIO_ORIGINAL_ZDOTDIR/{file}" ]] || source "$SYMVOULIO_ORIGINAL_ZDOTDIR/{file}"
-# Startup files may intentionally redirect (or unset) ZDOTDIR. Carry that
-# setting to the next original startup file and restore it in .zshrc.
-if (( ${{+ZDOTDIR}} )); then
-  export SYMVOULIO_ORIGINAL_ZDOTDIR=$ZDOTDIR SYMVOULIO_ZDOTDIR_SET=1
-else
-  export SYMVOULIO_ORIGINAL_ZDOTDIR=$HOME SYMVOULIO_ZDOTDIR_SET=0
-fi
-ZDOTDIR=$__symvoulio_hooks
-"#)).map_err(|e| e.to_string())?;
-            }
-            command.env("SYMVOULIO_ZDOTDIR_SET", if std::env::var_os("ZDOTDIR").is_some() { "1" } else { "0" });
-            std::fs::write(hooks.join(".zshrc"), r#"if [[ $SYMVOULIO_ZDOTDIR_SET == 1 ]]; then
-  export ZDOTDIR=$SYMVOULIO_ORIGINAL_ZDOTDIR
-else
-  unset ZDOTDIR
-fi
-[[ ! -f "$SYMVOULIO_ORIGINAL_ZDOTDIR/.zshrc" ]] || source "$SYMVOULIO_ORIGINAL_ZDOTDIR/.zshrc"
-__symvoulio_precmd() { local c=$?; printf '\033]133;D;%s;%s\007' "$SYMVOULIO_PROMPT_TOKEN" "$c"; }
-precmd_functions=(__symvoulio_precmd $precmd_functions)
-"#).map_err(|e| e.to_string())?;
-            command.env("SYMVOULIO_ORIGINAL_ZDOTDIR", std::env::var_os("ZDOTDIR").unwrap_or(home_directory()?.into_os_string()));
-            command.env("ZDOTDIR", hooks); command.args(["-l", "-i"]);
-        }
-    }
-    let cwd = match cwd {
-        Some(path) if std::path::Path::new(&path).is_dir() => PathBuf::from(path),
-        _ => home_directory()?,
-    };
+    let hook_dir = if cfg!(windows) { None } else { Some(unix_shell_hooks(&mut command, &shell)?) };
+    let cwd = panel_cwd(cwd, state.workspace(), home_directory()?)?;
     command.cwd(cwd);
     command.env("SYMVOULIO_PANEL", &panel);
     let mut session = spawn_session(command, dimensions, shell.clone(), sink)?;
@@ -614,6 +681,24 @@ fn resolve_login_command(_panel: &str, command: String, guard: Option<bool>) -> 
         } else { command }
     } else { command }
 }
+/// macOS and Linux (F1, F2): a panel opened before its CLI was installed keeps the PATH it started with, so a login or
+/// status command for a CLI whose folder is not on that PATH is typed with the CLI's full path, single-quoted for
+/// zsh, bash and sh. Install commands (`guard`) and CLIs found on the panel's PATH are typed as given.
+#[cfg(not(windows))]
+pub fn unix_login_command(command: String, guard: Option<bool>, panel_path: &std::ffi::OsStr, cli: Option<&symvoulio_core::cli::ResolvedCli>) -> String {
+    if guard == Some(true) {
+        return command;
+    }
+    let Some(args) = command.strip_prefix("codex ").or_else(|| command.strip_prefix("claude ")) else { return command };
+    let Some(cli) = cli.filter(|cli| cli.prefix_args.is_empty() && cli.program.is_absolute()) else { return command };
+    match cli.program.parent() {
+        Some(dir) if !symvoulio_core::cli::path_contains(panel_path, dir) => {
+            let quoted = cli.program.to_string_lossy().replace('\'', r"'\''");
+            format!("'{quoted}' {args}")
+        }
+        _ => command,
+    }
+}
 pub fn validate_paste(command: &str) -> Result<&str, String> {
     if command.chars().any(|c| c < '\u{20}' || c == '\u{7f}') {
         return Err("Pasted commands cannot contain control characters".into());
@@ -654,6 +739,18 @@ pub async fn pty_paste(
     })
     .await
     .map_err(|e| e.to_string())?;
+    #[cfg(not(windows))]
+    let command = if clipboard == Some(true) {
+        command
+    } else {
+        let provider = if command.starts_with("codex ") { Some(symvoulio_core::Provider::Codex) } else if command.starts_with("claude ") { Some(symvoulio_core::Provider::Claude) } else { None };
+        let cli = provider.filter(|_| guard != Some(true)).and_then(symvoulio_core::cli::resolve);
+        let sessions = manager.sessions.lock().map_err(|e| e.to_string())?;
+        let path = sessions.get(&panel).ok_or("Panel has no PTY session")?.path.clone();
+        let resolved = unix_login_command(command, guard, &path, cli.as_ref());
+        validate_paste(&resolved)?;
+        resolved
+    };
     let mut sessions = manager.sessions.lock().map_err(|e| e.to_string())?;
     let session = sessions.get_mut(&panel).ok_or("Panel has no PTY session")?;
     let mut output = session.output.lock().map_err(|e| e.to_string())?;
@@ -961,6 +1058,220 @@ mod tests {
             decoded.push_str(&decoder.decode(&text.as_bytes()[split..], true));
             assert_eq!(decoded, text);
         }
+    }
+    #[test]
+    fn mac04_macos_panel_shell_is_zsh_then_bash_then_sh() {
+        let list = |v: &[&str]| v.iter().map(|s| s.to_string()).collect::<Vec<_>>();
+        assert_eq!(mac_shell(&list(&["sh", "bash", "zsh"])), "zsh");
+        assert_eq!(mac_shell(&list(&["sh", "bash"])), "bash");
+        assert_eq!(mac_shell(&list(&["pwsh", "sh"])), "sh", "PowerShell is never the macOS default");
+        assert_eq!(mac_shell(&list(&[])), "");
+    }
+    #[test]
+    fn mac04_bash_rc_reads_login_files_on_macos_and_bashrc_elsewhere() {
+        let login = bash_rc(true);
+        assert!(login.starts_with("[ ! -r /etc/profile ] || . /etc/profile\n"), "{login}");
+        let order: Vec<usize> = [".bash_profile", ".bash_login", ".profile"].iter().map(|f| login.find(f).unwrap()).collect();
+        assert!(order.windows(2).all(|w| w[0] < w[1]), "login files out of order: {login}");
+        assert!(!login.contains(".bashrc"), "bash -l does not read ~/.bashrc itself");
+        assert!(login.contains(r#"(exit "$__symvoulio_c") && :; . "$HOME/.bash_logout"; fi; (exit "$__symvoulio_c") && :; eval "$__symvoulio_user_exit"; exit "$__symvoulio_c""#), "{login}");
+        assert!(login.contains("trap -p EXIT"), "the user's EXIT trap must be kept: {login}");
+        // Linux keeps the 0.2 start-up file byte for byte.
+        let linux = bash_rc(false);
+        assert!(linux.starts_with("[ ! -f \"$HOME/.bashrc\" ] || . \"$HOME/.bashrc\"\n__symvoulio_prompt()"), "{linux}");
+        for rc in [&login, &linux] {
+            assert!(rc.contains("__symvoulio_prompt") && rc.contains("PROMPT_COMMAND"));
+        }
+    }
+
+    /// Review round 4: with `set -e`, the EXIT handler must still run ~/.bash_logout and the user's EXIT trap, both
+    /// seeing the shell's status, and the shell must keep that status; with and without a logout file.
+    #[test]
+    #[cfg(unix)]
+    fn mac04_exit_handler_survives_errexit_with_and_without_logout() {
+        for with_logout in [false, true] {
+            let home = tempfile::tempdir().unwrap();
+            std::fs::write(home.path().join(".bash_profile"), "trap 'echo USER_TRAP status=$?' EXIT\n").unwrap();
+            if with_logout {
+                std::fs::write(home.path().join(".bash_logout"), "echo LOGGED_OUT status=$?\n").unwrap();
+            }
+            let rc = home.path().join("rc");
+            std::fs::write(&rc, bash_rc(true)).unwrap();
+            let out = std::process::Command::new("bash")
+                .args(["--norc", "--noprofile", "-c", r#". "$1"; set -e; exit 7"#, "bash"])
+                .arg(&rc)
+                .env("HOME", home.path())
+                .output()
+                .unwrap();
+            let text = String::from_utf8_lossy(&out.stdout);
+            assert_eq!(out.status.code(), Some(7), "logout={with_logout}: {text}");
+            assert!(text.contains("USER_TRAP status=7"), "logout={with_logout}: the user's EXIT trap was lost: {text}");
+            if with_logout {
+                assert!(text.contains("LOGGED_OUT status=7"), "~/.bash_logout skipped under set -e: {text}");
+                assert!(text.find("LOGGED_OUT") < text.find("USER_TRAP"), "{text}");
+            }
+        }
+    }
+
+    /// Open a real panel shell the way `pty_open` does, run `lines`, and return all output.
+    #[cfg(unix)]
+    fn real_panel(shell: &str, home: Option<&std::path::Path>, lines: &[&str], wait_for: &[String]) -> (String, String, Option<u32>) {
+        real_panel_in(shell, home, &std::env::temp_dir(), lines, wait_for)
+    }
+    #[cfg(unix)]
+    fn real_panel_in(shell: &str, home: Option<&std::path::Path>, cwd: &std::path::Path, lines: &[&str], wait_for: &[String]) -> (String, String, Option<u32>) {
+        let mut command = CommandBuilder::new(shell);
+        command.env_clear();
+        for (key, value) in std::env::vars_os() {
+            command.env(key, value);
+        }
+        if let Some(home) = home {
+            command.env("HOME", home);
+        }
+        command.env("PATH", symvoulio_core::cli::panel_path());
+        let _hooks = unix_shell_hooks(&mut command, shell).unwrap();
+        command.cwd(cwd);
+        let (tx, rx) = std::sync::mpsc::channel();
+        let mut session = spawn_session(command, size(120, 30).unwrap(), shell.into(), Box::new(move |e| { let _ = tx.send(e); })).unwrap();
+        let marker = session.output.lock().unwrap().marker.clone();
+        let mut bytes = String::new();
+        let deadline = Instant::now() + Duration::from_secs(30);
+        // The first prompt marker says the start-up files have run and the shell takes input.
+        while Instant::now() < deadline && !bytes.contains(&marker) {
+            if let Ok(PtyEvent::Data { data }) = rx.recv_timeout(Duration::from_millis(100)) { bytes.push_str(&data); }
+        }
+        assert!(bytes.contains(&marker), "{shell}: no first prompt marker: {bytes:?}");
+        for line in lines {
+            session.writer.write_all(format!("{line}\r").as_bytes()).unwrap();
+            session.writer.flush().unwrap();
+        }
+        let wanted: Vec<String> = wait_for.iter().map(|w| w.replace("{marker}", &marker)).collect();
+        // When the lines end the shell, also wait for its exit code.
+        let exits = lines.iter().any(|l| l.split_whitespace().next() == Some("exit"));
+        let mut exit = None;
+        while Instant::now() < deadline && !(wanted.iter().all(|w| bytes.contains(w)) && (!exits || exit.is_some())) {
+            match rx.recv_timeout(Duration::from_millis(100)) {
+                Ok(PtyEvent::Data { data }) => bytes.push_str(&data),
+                Ok(PtyEvent::Exit { code }) => exit = Some(code),
+                _ => {}
+            }
+        }
+        session.terminate().unwrap();
+        (bytes, marker, exit)
+    }
+
+    #[test]
+    #[cfg(unix)]
+    fn f3_panel_starts_in_the_workspace_never_the_home() {
+        let root = tempfile::tempdir().unwrap();
+        let home = root.path().join("home");
+        let workspace = root.path().join("Application Support/Symvoulio/workspace");
+        std::fs::create_dir_all(&home).unwrap();
+        // The workspace is created when missing, and the panel starts there.
+        assert_eq!(panel_cwd(None, Ok(workspace.clone()), home.clone()).unwrap(), workspace);
+        assert!(workspace.is_dir());
+        // An explicit, existing folder still wins; a missing one falls back to the workspace.
+        assert_eq!(panel_cwd(Some(root.path().to_string_lossy().into()), Ok(workspace.clone()), home.clone()).unwrap(), root.path());
+        assert_eq!(panel_cwd(Some(root.path().join("gone").to_string_lossy().into()), Ok(workspace.clone()), home.clone()).unwrap(), workspace);
+        // An unusable workspace is an error, never the home folder (review r1): relative, unreadable settings, or a
+        // folder that cannot be created (a file is in the way).
+        assert!(panel_cwd(None, Ok("relative/ws".into()), home.clone()).is_err());
+        assert!(panel_cwd(None, Err("settings lock".into()), home.clone()).unwrap_err().contains("workspace"));
+        let blocker = root.path().join("file");
+        std::fs::write(&blocker, "x").unwrap();
+        let err = panel_cwd(None, Ok(blocker.join("ws")), home.clone()).unwrap_err();
+        assert!(err.contains("Cannot open the workspace folder"), "{err}");
+    }
+
+    #[test]
+    #[cfg(windows)]
+    fn f3_windows_panels_keep_starting_in_the_home() {
+        let root = tempfile::tempdir().unwrap();
+        let home = root.path().join("home");
+        assert_eq!(panel_cwd(None, Ok(root.path().join("ws")), home.clone()).unwrap(), home, "Windows behaviour must stay unchanged");
+        assert!(!root.path().join("ws").exists());
+    }
+
+    #[test]
+    #[cfg(unix)]
+    fn f2_login_command_gets_the_full_path_only_when_the_panel_path_lacks_the_cli() {
+        let cli = symvoulio_core::cli::ResolvedCli { program: "/Users/me/.local/bin/claude".into(), prefix_args: vec![], shim: None };
+        let old = std::ffi::OsString::from("/usr/bin:/bin");
+        let fresh = std::ffi::OsString::from("/usr/bin:/bin:/Users/me/.local/bin");
+        assert_eq!(unix_login_command("claude auth login".into(), None, &old, Some(&cli)), "'/Users/me/.local/bin/claude' auth login");
+        assert_eq!(unix_login_command("claude auth login".into(), None, &fresh, Some(&cli)), "claude auth login");
+        // Install lines, unknown commands, test stand-ins with prefix arguments and missing CLIs are typed as given.
+        assert_eq!(unix_login_command("claude auth login".into(), Some(true), &old, Some(&cli)), "claude auth login");
+        assert_eq!(unix_login_command("ls -la".into(), None, &old, Some(&cli)), "ls -la");
+        let fake = symvoulio_core::cli::ResolvedCli { program: "/tmp/fake-cli".into(), prefix_args: vec!["--as".into(), "claude".into()], shim: None };
+        assert_eq!(unix_login_command("claude auth login".into(), None, &old, Some(&fake)), "claude auth login");
+        assert_eq!(unix_login_command("codex login".into(), None, &old, None), "codex login");
+        // A quote in the path cannot break out of the single-quoted word.
+        let odd = symvoulio_core::cli::ResolvedCli { program: "/Users/o'neil/.local/bin/codex".into(), prefix_args: vec![], shim: None };
+        assert_eq!(unix_login_command("codex login".into(), None, &old, Some(&odd)), r"'/Users/o'\''neil/.local/bin/codex' login");
+    }
+
+    #[test]
+    #[cfg(target_os = "macos")]
+    fn f2_f3_real_zsh_panel_runs_the_sign_in_command_in_the_workspace() {
+        let root = tempfile::tempdir().unwrap();
+        let workspace = root.path().join("workspace");
+        let bin = root.path().join("installed now/bin");
+        std::fs::create_dir_all(&bin).unwrap();
+        let claude = bin.join("claude");
+        // A stand-in for the freshly installed CLI, in a folder the panel's PATH does not have.
+        std::fs::write(&claude, "#!/bin/sh\n[ \"$1 $2\" = 'auth login' ] && echo \"SIGNED_IN_$((40+2)) in $(pwd -P)\"\n").unwrap();
+        use std::os::unix::fs::PermissionsExt;
+        std::fs::set_permissions(&claude, std::fs::Permissions::from_mode(0o755)).unwrap();
+        let cli = symvoulio_core::cli::ResolvedCli { program: claude.clone(), prefix_args: vec![], shim: None };
+        let line = unix_login_command("claude auth login".into(), None, &symvoulio_core::cli::panel_path(), Some(&cli));
+        assert!(line.starts_with('\''), "{line}");
+        let cwd = panel_cwd(None, Ok(workspace.clone()), root.path().into()).unwrap();
+        let real = std::fs::canonicalize(&workspace).unwrap();
+        let want = [format!("SIGNED_IN_42 in {}", real.display())];
+        let (bytes, _, _) = real_panel_in("/bin/zsh", None, &cwd, &[&line], &want);
+        assert!(bytes.contains(&want[0]), "{bytes:?}");
+    }
+
+    #[test]
+    #[cfg(target_os = "macos")]
+    fn mac04_real_login_zsh_panel_runs_user_commands_and_reports_exit_codes() {
+        let info = shell_info().unwrap();
+        assert_eq!(info.os, "macos");
+        assert_eq!(info.chosen, "zsh", "VAL.5: zsh is the macOS panel shell: {:?}", info.available);
+        let want = ["LOGIN_42".to_string(), "{marker}0\x07".into(), "{marker}3\x07".into()];
+        let (bytes, marker, _) = real_panel("/bin/zsh", None, &["[[ -o login ]] && echo LOGIN_$((6*7))", "(exit 3)"], &want);
+        assert!(bytes.contains("LOGIN_42"), "zsh panel is not a login shell or did not run the command: {bytes:?}");
+        assert!(bytes.contains(&format!("{marker}0\x07")), "success exit code not reported: {bytes:?}");
+        assert!(bytes.contains(&format!("{marker}3\x07")), "failure exit code not reported: {bytes:?}");
+    }
+
+    #[test]
+    #[cfg(target_os = "macos")]
+    fn mac04_real_bash_fallback_panel_reads_bash_profile_and_runs_commands() {
+        let home = tempfile::tempdir().unwrap();
+        // The profile installs its own EXIT trap (as ssh-agent set-ups do); it must survive next to ~/.bash_logout.
+        // It prints the status it receives (review round 3: it must be the shell's exit status, 7 here).
+        std::fs::write(home.path().join(".bash_profile"), "export SYMVOULIO_PROFILE_READ=yes\ntrap 'echo USER_TRAP_OK status=$?' EXIT\n").unwrap();
+        std::fs::write(home.path().join(".bashrc"), "export SYMVOULIO_BASHRC_READ=yes\n").unwrap();
+        let logout = home.path().join("logged-out");
+        std::fs::write(home.path().join(".bash_logout"), format!("echo LOGGED_OUT_OK; touch '{}'\n", logout.display())).unwrap();
+        // The logout line is printed by ~/.bash_logout itself, so waiting for it proves the shell ran it at exit.
+        let want = ["PROFILE_yes_".to_string(), "{marker}5\x07".into(), "LOGGED_OUT_OK".into(), "USER_TRAP_OK status=7".into()];
+        let (bytes, marker, exit) = real_panel("/bin/bash", Some(home.path()), &["echo PROFILE_${SYMVOULIO_PROFILE_READ}_${SYMVOULIO_BASHRC_READ}", "(exit 5)", "exit 7"], &want);
+        assert!(bytes.contains("USER_TRAP_OK status=7"), "the profile's EXIT trap did not get the shell's exit status: {bytes:?}");
+        assert_eq!(exit, Some(7), "the panel shell's own exit status changed: {bytes:?}");
+        let deadline = Instant::now() + Duration::from_secs(5);
+        while !logout.exists() && Instant::now() < deadline {
+            std::thread::sleep(Duration::from_millis(50));
+        }
+        assert!(logout.exists(), "~/.bash_logout did not run when the panel shell exited: {bytes:?}");
+        let (logged_out, user_trap) = (bytes.find("LOGGED_OUT_OK"), bytes.rfind("USER_TRAP_OK"));
+        assert!(user_trap.is_some(), "the profile's own EXIT trap was lost: {bytes:?}");
+        assert!(logged_out < user_trap, "bash runs ~/.bash_logout before the EXIT trap: {bytes:?}");
+        assert!(bytes.contains("PROFILE_yes_"), "bash panel did not read ~/.bash_profile like bash -l: {bytes:?}");
+        assert!(!bytes.contains("PROFILE_yes_yes"), "bash -l reads ~/.bashrc only through ~/.bash_profile: {bytes:?}");
+        assert!(bytes.contains(&format!("{marker}5\x07")), "exit code not reported: {bytes:?}");
     }
     #[test]
     fn panels_are_restricted_to_providers() {

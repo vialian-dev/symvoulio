@@ -345,30 +345,42 @@ fn clients(author: Provider) -> Result<(Arc<dyn ProviderClient>, Arc<dyn Provide
         (b, a)
     })
 }
+/// Where the settings file and the default workspace (the runs) live.
+pub struct DataLocations {
+    pub config: PathBuf,
+    pub workspace: PathBuf,
+}
+/// Settings and runs: the SYMVOULIO_DATA_DIR seam when set; on macOS `~/Library/Application Support/Symvoulio/`
+/// (`mac_support` is the Application Support folder; VAL.9, MAC-09); elsewhere, as in 0.2, the app config folder and
+/// `%USERPROFILE%\Symvoulio` - not Documents: measured 30.10, the app could not write a provider schema file under
+/// OneDrive\Documents ("Access is denied", os error 5) while the same run in a plain folder completed.
+pub fn data_locations(
+    seam: Option<PathBuf>,
+    mac_support: Option<PathBuf>,
+    config_dir: impl FnOnce() -> Result<PathBuf>,
+    home_dir: impl FnOnce() -> Result<PathBuf>,
+) -> Result<DataLocations> {
+    if let Some(root) = seam.or_else(|| mac_support.map(|support| support.join("Symvoulio"))) {
+        return Ok(DataLocations { config: root.join("settings.json"), workspace: root.join("workspace") });
+    }
+    Ok(DataLocations { config: config_dir()?.join("settings.json"), workspace: home_dir()?.join("Symvoulio") })
+}
 impl AppState {
     pub fn initialize(app: &tauri::App) -> Result<Self> {
         // Test and portable seam: SYMVOULIO_DATA_DIR relocates the settings file and the default workspace, so a
         // test or a portable copy never touches the installed app's data. Unset in normal use.
-        let data_dir = std::env::var_os("SYMVOULIO_DATA_DIR").map(PathBuf::from);
-        let config = match &data_dir {
-            Some(d) => d.join("settings.json"),
-            None => app
-                .path()
-                .app_config_dir()
-                .map_err(failure)?
-                .join("settings.json"),
-        };
+        let places = data_locations(
+            std::env::var_os("SYMVOULIO_DATA_DIR").map(PathBuf::from),
+            if cfg!(target_os = "macos") { Some(app.path().data_dir().map_err(failure)?) } else { None },
+            || app.path().app_config_dir().map_err(failure),
+            || app.path().home_dir().map_err(failure),
+        )?;
+        let config = places.config;
         let settings = if config.exists() {
             serde_json::from_slice(&fs::read(&config).map_err(failure)?).map_err(failure)?
         } else {
             Settings {
-                // %USERPROFILE%\Symvoulio, not Documents: measured 30.10, the app could not write a provider
-                // schema file under OneDrive\Documents ("Access is denied", os error 5) while the same run in a
-                // plain folder completed. Documents is often OneDrive-synced or folder-protected on Windows 11.
-                workspace: match &data_dir {
-                    Some(d) => d.join("workspace"),
-                    None => app.path().home_dir().map_err(failure)?.join("Symvoulio"),
-                },
+                workspace: places.workspace,
                 shell: Shell::default(),
                 author: Provider::Claude,
                 policy: Policy::default(),
@@ -395,6 +407,10 @@ impl AppState {
     }
     fn root(&self) -> Result<PathBuf> {
         Ok(lock(&self.settings)?.workspace.clone())
+    }
+    /// The workspace folder from the settings; provider panels start here on macOS and Linux (F3).
+    pub fn workspace(&self) -> Result<PathBuf> {
+        self.root()
     }
     fn dir(&self, id: &str) -> Result<PathBuf> {
         component(id)?;
@@ -1127,6 +1143,27 @@ pub fn app_info() -> Result<AppInfo> {
 mod tests {
     static PROVIDER_ENV: std::sync::Mutex<()> = std::sync::Mutex::new(());
     use super::*;
+    #[test]
+    fn mac09_macos_keeps_settings_and_runs_in_application_support() {
+        let support = PathBuf::from("/Users/someone/Library/Application Support");
+        let unused = || -> Result<PathBuf> { panic!("not consulted on macOS") };
+        let p = data_locations(None, Some(support.clone()), unused, unused).unwrap();
+        assert_eq!(p.config, support.join("Symvoulio/settings.json"));
+        assert_eq!(p.workspace, support.join("Symvoulio/workspace"));
+    }
+    #[test]
+    fn mac02_windows_data_locations_are_unchanged() {
+        let p = data_locations(None, None, || Ok(PathBuf::from("C:/Home/u/AppData/Roaming/com.symvoulio.app")), || Ok(PathBuf::from("C:/Home/u"))).unwrap();
+        assert_eq!(p.config, PathBuf::from("C:/Home/u/AppData/Roaming/com.symvoulio.app/settings.json"));
+        assert_eq!(p.workspace, PathBuf::from("C:/Home/u/Symvoulio"));
+    }
+    #[test]
+    fn mac09_data_dir_seam_wins_on_every_os() {
+        let unused = || -> Result<PathBuf> { panic!("seam set") };
+        let p = data_locations(Some("/tmp/portable".into()), Some("/Users/x/Library/Application Support".into()), unused, unused).unwrap();
+        assert_eq!(p.config, PathBuf::from("/tmp/portable/settings.json"));
+        assert_eq!(p.workspace, PathBuf::from("/tmp/portable/workspace"));
+    }
     /// The fake provider CLI from symvoulio-core, next to this test binary (target/<profile>/fake-cli[.exe]).
     /// `cargo test -p symvoulio-core -p symvoulio` (the gate) builds it; a nested cargo here would wait on the build lock.
     fn fake_cli() -> PathBuf {

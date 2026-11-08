@@ -9,6 +9,16 @@ import { toPolicy, viewPolicy } from './policy'
 import type { Run, State, FileChip } from '../state/store'
 import type { Provider, RunEvent, RunSnapshot, Settings, HumanDecision } from './types'
 import { STEPS_PER_SIDE, type TermLine } from '../lib/script'
+import { resetPanel } from './panelShells'
+/** F2: how long «Sign in» waits for the browser sign-in, checking the connection every few seconds. */
+export const signInTiming = { waitMs: 10 * 60_000, pollMs: 2_500 }
+/** Panel actions of sign-in attempts, one provider at a time, in the order they were started (review r3). */
+const panelQueues: Partial<Record<Provider, Promise<unknown>>> = {}
+function withPanel<T>(p: Provider, task: () => Promise<T>): Promise<T> {
+  const run = (panelQueues[p] ?? Promise.resolve()).then(task, task)
+  panelQueues[p] = run.catch(() => undefined)
+  return run
+}
 export const snapshots = new Map<string, RunSnapshot>()
 export const runLines = new Map<string, Record<Provider, TermLine[]>>()
 export const runProviders = new Map<string, Provider>()
@@ -199,6 +209,44 @@ export async function action(name: string, args: unknown[]) {
       case 'checkAgain': update({ checking: true }); try { await detect() } finally { update({ checking: false }) }; break
       case 'pasteCommand': await backend.paste(alias as Provider, args[1] as string, args[2] === 'install'); break
       case 'pressEnter': await backend.ptyWrite(alias as Provider, '\r'); break
+      case 'signIn': {
+        const p = alias as Provider
+        // false once «Cancel» or a newer attempt made this one stale (review r1).
+        const current = typeof args[1] === 'function' ? args[1] as () => boolean : () => read().signingIn[p]
+        const command = p === 'claude' ? 'claude auth login' : 'codex login'
+        // A panel with typed text or a running program (an installer, a CLI's first-run questions) gets a fresh shell.
+        // Every await can outlive a «Cancel» or a newer attempt: re-check before each panel action (review r2). A
+        // command already typed by a stale attempt is erased (Ctrl+U), never run. The panel actions of attempts on one
+        // provider run one after another (review r3), so a stale attempt's Ctrl+U can never erase a newer attempt's
+        // command: the newer attempt types only after the older one has finished with the panel.
+        const entered = await withPanel(p, async () => {
+          try { await backend.paste(p, command) } catch (error) {
+            if (!current()) return false
+            if (!(await resetPanel(p))) throw error
+            if (!current()) return false
+            await backend.paste(p, command)
+          }
+          if (!current()) { await backend.ptyWrite(p, '\x15').catch(() => { /* the panel may be gone */ }); return false }
+          await backend.ptyWrite(p, '\r')
+          return true
+        })
+        if (!entered) return false
+        const deadline = Date.now() + signInTiming.waitMs
+        while (Date.now() < deadline && current()) {
+          await new Promise((done) => setTimeout(done, signInTiming.pollMs))
+          if (!current()) break
+          // Detection reads the provider's real state, so its result is applied even for a stale attempt; only the
+          // attempt's own actions (Enter, the panel reset) are withheld.
+          await detect().catch(() => { /* the next poll retries */ })
+          if (!current()) break
+          if (read().conn[p].connected) {
+            // F4: the login's leftovers («Login successful. Press Enter») go with the old shell.
+            await withPanel(p, async () => { if (current()) await resetPanel(p).catch(() => false) })
+            return true
+          }
+        }
+        return false
+      }
       case 'checkConnection':
         // Showing the status command is optional; a busy panel must not skip detection.
         try { await backend.paste(alias as Provider, alias === 'claude' ? 'claude auth status' : 'codex login status') } catch { /* Pending input stays untouched. */ }
@@ -255,7 +303,7 @@ export async function action(name: string, args: unknown[]) {
     if (name === 'startRun') update(s => ({ runs: s.runs.map(r => r.id === alias ? { ...r, state: 'failed', startFailure: String(error) } : r) }))
     if (name === 'startRun') saveFailedReviews(alias)
     update({})
-    if (name === 'pasteCommand') throw error
+    if (name === 'pasteCommand' || name === 'signIn') throw error
     if (name === 'checkConnection') return false
     if (name === 'decide' || name === 'decideIssue') return false
   }

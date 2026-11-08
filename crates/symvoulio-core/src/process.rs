@@ -15,6 +15,10 @@ use std::{
 pub fn command(cli: &ResolvedCli) -> Command {
     let mut cmd = Command::new(&cli.program);
     cmd.args(&cli.prefix_args);
+    // macOS/Linux only: Finder gives the app no shell PATH, and npm CLIs need `node` on it (MAC-05).
+    if let Some(path) = crate::cli::child_path(cli) {
+        cmd.env("PATH", path);
+    }
     hide(&mut cmd);
     cmd
 }

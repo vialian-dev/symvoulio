@@ -8,7 +8,8 @@ import { Terminal as XTerm } from '@xterm/xterm'
 import { FitAddon } from '@xterm/addon-fit'
 import type { TermLine } from '../lib/script'
 import type { Provider } from '../data/sample'
-import { setPanelShell } from '../services/panelShells'
+import { registerPanelReset, setPanelShell } from '../services/panelShells'
+import { getState } from '../state/store'
 import { backend, closePanel } from '../services/backend'
 import { pasteDecision } from '../lib/terminalInput'
 import { installExited, installPainted, installTimeout } from '../state/install'
@@ -65,6 +66,8 @@ export function Terminal({ lines, mode, prompt, pending, onEnter, label, testId,
   const [stalled, setStalled] = useState(false)
   const [reopen, setReopen] = useState(0)
   const panelGeneration = useRef(0)
+  // F2/F4: callers of resetPanel wait here until the fresh shell is attached.
+  const resetWaiters = useRef<{ done: () => void; fail: (e: unknown) => void }[]>([])
   // Follow the theme toggle (the `dark` class on <html>).
   useEffect(() => {
     const mo = new MutationObserver(() => setDark(isDark()))
@@ -144,15 +147,25 @@ export function Terminal({ lines, mode, prompt, pending, onEnter, label, testId,
         if (!current()) return
         if (e.kind === 'Data') t.write(e.data)
         if (e.kind === 'Exit') { setPanelShell(live); installTimeout(live); setStalled(true) }
-        if (e.kind === 'CommandTimeout') { installTimeout(live); setStalled(true) }
+        // A sign-in waits for the browser for minutes; that is not a stuck terminal (F2, F4).
+        if (e.kind === 'CommandTimeout') { installTimeout(live); if (!getState().signingIn[live]) setStalled(true) }
         if (e.kind === 'CommandExit') void installExited(live, e.code, e.last).then(installed => { if (current() && installed) { t.write('\x1bc'); openPanel() } })
       }, settings.shell[live] || undefined) : undefined)
-        .then(info => { if (current() && info) { setPanelShell(live, info.shell); setStalled(false) } })
-        .catch((e) => { if (current()) t.write(`\r\n${String(e)}\r\n`) })
+        .then(info => { if (current() && info) { setPanelShell(live, info.shell); setStalled(false); resetWaiters.current.splice(0).forEach(w => w.done()) } })
+        .catch((e) => { resetWaiters.current.splice(0).forEach(w => w.fail(e)); if (current()) t.write(`\r\n${String(e)}\r\n`) })
     }
     const timer = setTimeout(openPanel, 30)
     return () => { attached = false; clearTimeout(timer); t.options.windowsPty = undefined }
   }, [live, reopen])
+
+  // F2/F4: a clean shell on request: end the panel's process, then open a fresh shell (the effect above clears the screen).
+  useEffect(() => {
+    if (!live) return
+    return registerPanelReset(live, () => new Promise<void>((done, fail) => {
+      resetWaiters.current.push({ done, fail })
+      void closePanel(live).then(() => setReopen(n => n + 1)).catch((e) => { resetWaiters.current.splice(0).forEach(w => w.fail(e)) })
+    }))
+  }, [live])
 
   useEffect(() => {
     const t = term.current

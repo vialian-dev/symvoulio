@@ -13,6 +13,9 @@ import { Wordmark, type BrandMark } from '@symvoulio/ui/frame'
 import { THEME_KEY } from './theme'
 import { cx } from '@symvoulio/ui/components'
 import { ProviderPanels, useRunFromRoute } from './Panels'
+import { SetupHelp } from './SetupHelp'
+import { helpStep } from '../lib/setupHelp'
+import { appSignIn, usePlatform } from '../services/platform'
 import { useRunData } from '../services/useRunData'
 import type { RunSnapshot } from '../services/types'
 import { wasStopped } from '../lib/runState'
@@ -85,6 +88,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { t } = useTranslation()
   const { pathname } = useLocation()
   const onRunScreen = /^\/review\//.test(pathname)
+  // F5: on setup steps 1-3 the rail widens to hold the «What to do now» help above Settings.
+  const withHelp = appSignIn(usePlatform()) && helpStep(pathname) !== null
   const [pct, setPct] = useState(38)
   const row = useRef<HTMLDivElement>(null)
   const main = useRef<HTMLElement>(null)
@@ -120,10 +125,11 @@ export function AppShell({ children }: { children: ReactNode }) {
         <ThemeToggle />
       </header>
       <div ref={row} className="flex min-h-0 min-w-0">
-        <nav aria-label={t('nav.label')} data-testid="nav" className="flex w-[84px] shrink-0 flex-col items-stretch gap-1 border-e border-[var(--line)] px-2 py-3">
+        <nav aria-label={t('nav.label')} data-testid="nav" className={cx('flex shrink-0 flex-col items-stretch gap-1 border-e border-[var(--line)] px-2 py-3', withHelp ? 'w-[184px]' : 'w-[84px]')}>
           <NavItem to="/reviews" testId="nav-reviews" icon={<LibraryBig size={20} />} label={t('nav.reviews')} match={(p) => p.startsWith('/review/')} />
           <NavItem to="/new" testId="nav-new" icon={<FilePlus2 size={20} />} label={t('nav.new')} />
           <div className="flex-1" />
+          <SetupHelp />
           <NavItem to="/settings" testId="nav-settings" icon={<Settings size={20} />} label={t('nav.settings')} match={(p) => p.startsWith('/setup')} />
           <NavItem to="/about" testId="nav-about" icon={<Info size={20} />} label={t('nav.about')} />
           <p data-testid="copyright-frame" className="mt-2 text-center text-[10px] leading-tight text-[var(--muted)]">{t('frame.copyright')}</p>

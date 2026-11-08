@@ -33,6 +33,9 @@ const cases: [string, string, string, string][] = [
   ['claude', 'macos', 'zsh', CLAUDE_SH], ['claude', 'linux', 'bash', CLAUDE_SH],
   ['codex', 'windows', 'pwsh', CODEX_WIN], ['codex', 'windows', 'powershell', CODEX_WIN],
   ['codex', 'macos', 'zsh', CODEX_SH], ['codex', 'linux', 'bash', CODEX_SH],
+  // MAC-06: the macOS bash fallback panel (VAL.5) gets the same POSIX line; a full path is recognised too.
+  ['claude', 'macos', 'bash', CLAUDE_SH], ['codex', 'macos', 'bash', CODEX_SH],
+  ['claude', 'macos', '/bin/zsh', CLAUDE_SH], ['codex', 'macos', '/opt/homebrew/bin/bash', CODEX_SH],
 ]
 for (const [provider, os, shell, want] of cases) {
   // Native is preferred whatever Node/npm look like; never an npm line.

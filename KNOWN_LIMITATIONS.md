@@ -1,10 +1,10 @@
-# Known limitations: Symvoulio v0.2 (Windows)
+# Known limitations: Symvoulio v0.3 (Windows and macOS)
 
 Symvoulio helps you review most text-based business documents. It does not promise support for every document.
 
 ## Documents
 - Primary documents: `.txt`, `.md`, `.docx` and text-based `.pdf`. Supporting files can also be `.csv`.
-- Not supported in v0.2: scanned PDFs and OCR, PowerPoint, spreadsheet formula validation, VBA or macros, complex
+- Not supported in v0.3: scanned PDFs and OCR, PowerPoint, spreadsheet formula validation, VBA or macros, complex
   legal redlining, images inside documents, and exact preservation of advanced Word layout. A PDF with no text layer
   is refused with a clear message.
 - Revisions are written as Markdown and as a simple `.docx` (headings, paragraphs, lists, bold and italic). The
@@ -42,8 +42,50 @@ Symvoulio helps you review most text-based business documents. It does not promi
   a plain folder completed. The root cause is not yet measured.
 - Requires Windows 10 1809 or newer (ConPTY) with WebView2, which Windows 11 includes.
 
-## Not in v0.2
-- macOS certification (not measured for v0.2), the `.msi` installer, and providers other than Claude Code and Codex.
+## macOS
+
+Measured on one Mac: MacBook Pro M5 (Apple Silicon), macOS 27.0.1 — over SSH on 05.11.2026, and on 08.11.2026 on
+the screen (0.3.1, notarized build) with real Claude Code and Codex sign-ins.
+
+- **Notarized release build only.** The 0.3.1 `.dmg` and app on the release page are signed with an Apple Developer
+  ID and notarized. A build you make yourself without a Developer ID is signed ad hoc, and macOS blocks its first
+  launch until you choose System Settings → Privacy & Security → Open Anyway. The About screen of 0.3.1 still
+  describes that ad hoc case («not notarized by Apple») also in the notarized build; the text is wrong, the app is not.
+- **Measured on macOS 27.0.1 only.** The app declares macOS 13 Ventura as its minimum; versions 13 to 26 are not
+  measured.
+- **Intel Macs not measured on hardware.** The app is one universal build (`x86_64` and `arm64`). Its Rust tests
+  pass as `x86_64` under Rosetta 2 on the Apple Silicon Mac; no Intel Mac was available.
+- **One live sample review on a Mac.** On 08.11.2026 a short review of the sample document ran with both providers
+  signed in (both answered, Stop worked). Longer runs, export and the human decision screen on a Mac are covered by the
+  shared tests with stand-in CLIs, not yet by a measured run.
+- **Provider CLIs in other folders.** An app opened from Finder gets no shell PATH. Symvoulio looks in the PATH it
+  was started with, your login shell's PATH (read again when the last read is older than 30 seconds, at most 5 seconds
+  each), `/opt/homebrew/bin`, `/usr/local/bin`, `~/.local/bin`, `~/.npm-global/bin`, `~/.volta/bin`, `~/.bun/bin`,
+  nvm's version folders and the Codex package folder (`~/.codex/packages/standalone/current/bin`, `CODEX_HOME`,
+  `CODEX_INSTALL_DIR`). A CLI elsewhere is not found.
+- **bash panels** (only where zsh is missing) read the login files like `bash -l` but are not started with `-l`, so
+  `shopt login_shell` reports off.
+- **Data folder.** Settings and runs are kept in `~/Library/Application Support/Symvoulio/`, which Finder hides by
+  default; open it from the Export screen or with Finder → Go → Go to Folder.
+- **Bundle identifier.** The app keeps the identifier `com.symvoulio.app` of the Windows version. Tauri warns that an
+  identifier ending in `.app` is not recommended on macOS; changing it would move the Windows settings folder.
+
+## Known small issues in 0.3.1
+
+Seen on the Mac on 08.11.2026; they do not stop a review.
+
+- **Run setup again keeps you in the wizard.** During a repeated setup, clicking Reviews in the left rail returns to
+  step 1 (System check); you leave the wizard only through Finish setup. The rail highlights Settings meanwhile.
+- **Stop and the Reviewer panel can disagree.** After Stop the run may say that the last revision's review did not
+  finish, while the Reviewer's panel shows that review as completed. The cause is not yet established.
+- **Settings → Language says «English only in v0.2.»** The text is out of date; the app is English only.
+- **The Author panel shows terse lines** such as «system: provider event» and «assistant: provider event» instead of
+  readable progress.
+- **«Open sample review» opens a finished demonstration review**, not a new run. For a live run use New review → «Use
+  the sample document»; the review name and objective are not filled in for you.
+
+## Not in v0.3
+- The `.msi` installer, a measured Linux version, and providers other than Claude Code and Codex.
 
 The credential-safety guarantee covers the live diagnostics stream only. Review results (findings and the revised document) are provider text by design and are shown to the user. Raw provider output is an optional, memory-only session setting, off on app start; it is not credential-safe. Raw diagnostics are never persisted.
 

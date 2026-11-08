@@ -64,7 +64,7 @@ export const cannedBackend: CannedBackend = {
   listRuns: async () => (await store()).getState().runs.map(r => ({ id: r.id, name: r.name, state: r.state, roundsDone: r.done, createdAt: r.createdAt, runDir: '' })),
   deleteRun: async id => { (await store()).deleteRun(id) },
   exportRun: unavailable, openFolder: async () => {},
-  appInfo: async () => ({ version: '0.2.0', os: 'browser', arch: 'browser' }),
+  appInfo: async () => ({ version: '0.3.1', os: 'browser', arch: 'browser' }),
   getSettings: async () => { const s = (await store()).getState(); return { workspace: s.workspace, shell: s.shellName, author: s.author, policy: toPolicy(s.policy) } },
   setSettings: async settings => { const s = await store(); s.setWorkspace(settings.workspace); s.setAuthor(settings.author); s.setPolicy(policy(settings.policy)); for (const p of ['claude', 'codex'] as const) s.setShellName(p, settings.shell[p] === 'powershell' ? 'powershell' : 'pwsh'); return settings },
 }

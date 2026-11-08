@@ -3,7 +3,59 @@
 All notable changes are listed here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 the version numbers follow [Semantic Versioning](https://semver.org/).
 
-## [0.2.0] — unreleased
+## [0.3.1] — 2026-11-08 — macOS support and fixes
+
+The first public release for macOS (it includes 0.3.0, which was not released on its own), with fixes from the first
+look at 0.3.0 on a Mac. Windows behaviour is unchanged.
+
+### Added
+- **Signed and notarized macOS release.** The `Symvoulio_0.3.1_universal.dmg` on the release page is signed with an
+  Apple Developer ID certificate and notarized by Apple, so it opens without System Settings → Open Anyway.
+
+### Changed
+- **Sign in from the app.** On «Connect Claude Code» and «Connect Codex», «Sign in» runs the provider's official
+  login (`claude auth login`, `codex login`) in its panel; you only finish the sign-in in the browser. The page turns
+  to «connected» by itself, and the panel is then cleared. «Paste command» still types the command without running it.
+- **Help at the bottom of the left rail.** On the first three setup steps the rail says what to do now, for the
+  current step and provider state. The picture placeholders in the step cards are gone.
+- **Provider panels on macOS start in the app's workspace** (`~/Library/Application Support/Symvoulio/workspace`),
+  not in your home folder.
+
+### Fixed
+- A CLI installed while the app is open is found by «Check again»: the login shell's PATH is read again after 30 s,
+  and the Codex standalone package folder (`~/.codex/packages/standalone/current/bin`, `CODEX_HOME`,
+  `CODEX_INSTALL_DIR`) is searched. A panel opened before the install types the CLI's full path.
+- The panels are cleared after the sign-in and when setup is finished: no «Login successful. Press Enter», no install
+  transcript, no «Terminal busy or closed» while a sign-in waits for the browser.
+- «Answered by Your name»: the missing space.
+- Settings on macOS no longer show PowerShell text.
+- The Reviews list shows the whole date and time on macOS («Nov 7, 23:04», was cut to «Nov 7 at 23:…»).
+
+## [0.3.0] — macOS — not released on its own (included in 0.3.1)
+
+Symvoulio for macOS 13 Ventura or newer, as one universal app for Apple Silicon and Intel. Windows behaviour is
+unchanged.
+
+### Added
+- **macOS app and installer.** `installers/macos/build.sh` builds a universal `Symvoulio.app` and
+  `Symvoulio_0.3.0_universal.dmg` with an Applications shortcut, and writes the `.dmg`'s SHA-256 next to it.
+- **Signing.** The app is signed ad hoc and is not notarized: macOS asks you to allow the first launch in
+  System Settings → Privacy & Security → Open Anyway (README, «macOS»). With an Apple Developer ID identity and the
+  App Store Connect variables `APPLE_API_ISSUER`, `APPLE_API_KEY` and `APPLE_API_KEY_PATH`, the same script signs and
+  notarizes the app and the `.dmg`. Keys are read only from files named by environment variables, never printed.
+- **Provider panels on macOS** open your login `zsh`; without zsh, `bash` reading the login files as `bash -l` does.
+- **About** explains the macOS first launch on a Mac instead of Windows SmartScreen.
+
+### Fixed
+- An app opened from Finder gets no shell PATH on macOS. Detection and provider calls now also search the login
+  shell's PATH, `/opt/homebrew/bin`, `/usr/local/bin`, `~/.local/bin`, `~/.npm-global/bin`, `~/.volta/bin`,
+  `~/.bun/bin` and nvm folders, and provider processes get that PATH, so npm-installed CLIs find `node`.
+- Install refused a macOS `bash` panel; it now pastes the same official command as in zsh.
+- On macOS, settings and runs are kept in `~/Library/Application Support/Symvoulio/` instead of
+  `~/Library/Application Support/com.symvoulio.app/` and `~/Symvoulio`.
+- Version numbers in Cargo, Tauri and npm agree: 0.3.0.
+
+## [0.2.0] — 2026-11-02
 
 ### Added
 - Setup can paste official Claude Code and Codex installer commands for Windows PowerShell, macOS zsh and Linux bash. You press Enter to run them.

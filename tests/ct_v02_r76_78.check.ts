@@ -213,7 +213,7 @@ async function withTerminal<T>(invoke: (c: string, a: any) => Promise<unknown>, 
       react: { useEffect: (fn: () => unknown) => effects.push(fn), useRef: (v: unknown) => ({ current: v }), useState: () => [false] },
       'react/jsx-runtime': { jsx: (_: unknown, props: { ref: { current: unknown } }) => { props.ref.current = host } },
       '@xterm/xterm': { Terminal: XTerm }, '@xterm/addon-fit': { FitAddon: class { fit() {} } },
-      '../services/panelShells': { setPanelShell() {} }, '../services/backend': { backend: desktopBackend },
+      '../services/panelShells': { setPanelShell() {}, registerPanelReset: () => () => {} }, '../state/store': { getState: () => ({ signingIn: {} }) }, '../services/backend': { backend: desktopBackend },
       '../lib/terminalTheme': { PALETTE, xtermTheme }, '../lib/terminalInput': { pasteDecision },
       '../state/install': { installExited() {}, installPainted() {}, installTimeout() {} }, '../i18n': { i18n: { t: () => 'paste refused' } },
     })

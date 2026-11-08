@@ -233,7 +233,7 @@ test.describe('Settings and About', () => {
     await setupDone(page)
     await page.goto(`/about?${FAST}`)
     await expect(page.getByTestId('subtitle')).toHaveText('Multi-provider document review with human approval')
-    await expect(page.getByTestId('version')).toContainText('0.2.0')
+    await expect(page.getByTestId('version')).toContainText('0.3.1')
     await expect(page.getByTestId('github')).toContainText('GitHub')
     await expect(page.getByTestId('statement-independence')).toContainText('does not store provider passwords, browser cookies, or authentication tokens in its settings or files')
     await expect(page.getByTestId('statement-account')).toContainText('Users are responsible for maintaining valid provider accounts')

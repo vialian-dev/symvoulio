@@ -88,5 +88,8 @@ export async function onRunSnapshot(callback: (snapshot: RunSnapshot) => void) {
 }
 
 export async function installEnvironment(): Promise<{ os: 'windows' | 'macos' | 'linux' }> {
-  return isDesktop ? call('shell_info') : { os: 'windows' }
+  if (isDesktop) return call('shell_info')
+  // Browser stand: Windows, as before; `?os=macos` (or linux) shows that OS's screens (0.3.1 tests).
+  const requested = typeof location === 'undefined' ? null : new URLSearchParams(location.search).get('os')
+  return { os: requested === 'macos' || requested === 'linux' ? requested : 'windows' }
 }

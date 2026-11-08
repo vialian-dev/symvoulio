@@ -10,6 +10,7 @@ import type { AppInfo } from '../services/types'
 import { ExternalLink, MonitorCheck, ScrollText, TriangleAlert } from 'lucide-react'
 import { Badge, Card, Caps } from '@symvoulio/ui/components'
 import { Page } from '../components/Page'
+import { firstRunNote } from '../lib/platformNote'
 
 const STATEMENTS = ['independence', 'account', 'human', 'trademark'] as const
 const LIMITS = ['ocr', 'ppt', 'layout', 'formulas', 'macros', 'redlining', 'images'] as const
@@ -44,6 +45,14 @@ export function About() {
         ))}
       </div>
 
+      {firstRunNote(info?.os) === 'macos' ? (
+        <Card data-testid="macos-note" className="mt-4 p-5">
+          <div className="flex items-center gap-2"><MonitorCheck size={15} className="text-[var(--accent)]" /><h2 className="text-[14.5px] font-semibold">{t('s13.mac.title')}</h2></div>
+          <p className="mt-2 text-[13px] leading-relaxed text-[var(--ink-2)]">{t('s13.mac.why')}</p>
+          <p className="mt-2 text-[13px] leading-relaxed text-[var(--ink-2)]">{t('s13.mac.steps')}</p>
+          <p className="mt-2 text-[12.5px] text-[var(--muted)]">{t('s13.mac.source')}</p>
+        </Card>
+      ) : (
       <Card data-testid="windows-note" className="mt-4 p-5">
         <div className="flex items-center gap-2"><MonitorCheck size={15} className="text-[var(--accent)]" /><h2 className="text-[14.5px] font-semibold">{t('s13.win.title')}</h2></div>
         <p className="mt-2 text-[13px] leading-relaxed text-[var(--ink-2)]">{t('s13.win.why')}</p>
@@ -52,6 +61,7 @@ export function About() {
         <blockquote className="mt-3 border-s-2 border-[var(--accent)] ps-3 text-[13px] text-[var(--ink-2)] italic">{t('s13.win.sac')}</blockquote>
         <p className="mt-2 text-[12.5px] text-[var(--muted)]">{t('s13.win.checksum')}</p>
       </Card>
+      )}
 
       <Card data-testid="limitations" className="mt-4 p-5">
         <div className="flex items-center gap-2"><TriangleAlert size={15} className="text-[var(--value)]" /><Caps>{t('s13.limits')}</Caps></div>

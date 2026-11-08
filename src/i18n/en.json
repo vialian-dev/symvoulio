@@ -1,5 +1,22 @@
 {
   "terminal": { "pasteRefused": "Paste refused: the text contains a line break or control character.", "busyHint": "Terminal busy or closed. Press Ctrl+C to interrupt, or reopen the panel (ends its current process).", "reopen": "Reopen panel" },
+  "help": {
+    "title": "What to do now",
+    "system": {
+      "install": "{{name}} is not installed. Press «Install» on its card. The official installer is typed into the {{name}} panel at the right: click into that panel and press Enter, wait until it finishes, then press «Check again».",
+      "installing": "{{name}} is installing in its panel at the right. When it finishes, this page shows «Installed: Yes». If it does not, press «Check again».",
+      "signIn": "Both programs are installed. Press «Continue»: the next two steps sign you in to each of them.",
+      "done": "Both programs are installed and signed in. Press «Continue»."
+    },
+    "connect": {
+      "notInstalled": "{{name}} is not installed yet. Press «Back» and install it on the System check page.",
+      "signIn": "Press «Sign in». {{name}} starts its sign-in in the panel at the right and your browser opens: sign in there with your {{account}}.",
+      "waiting": "Finish signing in in your browser. If no browser window opened, use the link shown in the {{name}} panel. This page turns to «connected» by itself.",
+      "apiKey": "Press «Paste command», click into the {{name}} panel and press Enter, then follow what the panel asks. Press «Check connection» when it says you are signed in.",
+      "done": "{{name}} is connected. Press «Next»."
+    },
+    "account": { "claude": "Anthropic account", "codex": "ChatGPT account" }
+  },
   "common": { "back": "Back", "next": "Next", "continue": "Continue", "cancel": "Cancel", "close": "Close", "copy": "Copy", "copied": "Copied", "yes": "Yes", "no": "No" },
   "error": {
     "title": "Something went wrong on this screen",
@@ -95,7 +112,18 @@
       "text": {
         "claude": "{{name}} signs in through its own official login. Symvoulio only types the command into the {{name}} panel at the right; you run it, and the browser opens Anthropic's sign-in page.",
         "codex": "{{name}} signs in through its own official login. Symvoulio only types the command into the {{name}} panel at the right; you run it, and the browser opens the ChatGPT sign-in page."
+      },
+      "textAuto": {
+        "claude": "{{name}} signs in through its own official login. Symvoulio starts it for you in the {{name}} panel at the right and your browser opens Anthropic's sign-in page. You only sign in there.",
+        "codex": "{{name}} signs in through its own official login. Symvoulio starts it for you in the {{name}} panel at the right and your browser opens the ChatGPT sign-in page. You only sign in there."
       }
+    },
+    "signIn": {
+      "title": "Sign in",
+      "text": "Press «Sign in». Symvoulio runs the official sign-in of {{name}} in its panel:",
+      "button": "Sign in",
+      "waiting": "Waiting for the browser…",
+      "hint": "Finish signing in in your browser. This page turns to «connected» by itself; the {{name}} panel is then cleared."
     },
     "s2": { "title": "Paste the login command", "text": "Press «Paste command». This appears in the {{name}} panel, typed but not run:" },
     "paste": "Paste command",
@@ -114,13 +142,15 @@
         }
       }
     },
-    "s5": { "title": "Come back and check the connection", "text": "Press «Check connection». It pastes the status command and reads only yes / no:" },
+    "s5": { "title": "Come back and check the connection", "text": "Press «Check connection». It pastes the status command and reads only yes / no:", "textAuto": "After the browser sign-in the status turns to «connected» by itself. «Check connection» asks again at any time; it reads only yes / no:" },
     "check": "Check connection",
     "checking": "Checking…",
     "connected": "{{name}} connected",
     "connectedMethod": "Signed in with: {{method}}. Symvoulio keeps only this and «connected»; never an email, organisation or password.",
     "notYet": "Not connected yet. Run the login command in the panel (press Enter there), finish the sign-in, then check again.",
     "never": "Symvoulio never types Enter for you. Connection settings store no provider credentials; login terminal text passes through app memory.",
+    "notYetAuto": "Not connected yet. Press «Sign in» and finish the sign-in in the browser, then check again.",
+    "neverAuto": "Symvoulio presses Enter in a panel only when you press «Sign in». Connection settings store no provider credentials; login terminal text passes through app memory.",
     "returnToReview": "Back to the review",
     "shot": {
       "panel": "Screenshot: the {{name}} panel at the right",
@@ -382,6 +412,7 @@
     "pwsh": "PowerShell 7 (pwsh.exe)",
     "winps": "Windows PowerShell 5.1",
     "shellHint": "PowerShell 7 is used when it is installed, otherwise Windows PowerShell. On macOS the panels use zsh.",
+    "shellHintMac": "The panels use your login shell, zsh (bash when zsh is missing), with your usual settings.",
     "versions": "Provider versions",
     "refresh": "Refresh",
     "policy": "Policy defaults",
@@ -398,7 +429,7 @@
   "s13": {
     "caption": "About & disclaimer",
     "subtitle": "Multi-provider document review with human approval",
-    "version": "Version 0.2.0 · Windows · prototype",
+    "version": "Version 0.3.1 · Windows and macOS · prototype",
     "versionDesktop": "Version {{version}} · {{os}}",
     "github": "GitHub: github.com/vialian-dev/symvoulio",
     "githubHint": "Source code, releases and issue reporting",
@@ -432,11 +463,17 @@
     },
     "win": {
       "title": "Windows: why you may see a warning",
-      "why": "The v0.2 installer is not code-signed yet, and a new download has no reputation with Microsoft. Windows may therefore warn before it runs. Microsoft describes SmartScreen this way:",
+      "why": "The Windows installer is not code-signed yet, and a new download has no reputation with Microsoft. Windows may therefore warn before it runs. Microsoft describes SmartScreen this way:",
       "smartscreen": "«If a URL, a file, an app, or a certificate has an established reputation, users don't see any warnings. If there's no reputation, the item is marked as a higher risk and presents a warning to the user.»",
       "dialog": "The dialog reads «Windows protected your PC». Choose More info, then Run anyway — only for an installer whose SHA-256 checksum matches the one on the release page.",
       "sac": "«Malware, Potentially Unwanted Apps (PUA), and unknown, unsigned code are blocked by default.» — Microsoft, on Smart App Control. With Smart App Control on, an unsigned installer cannot run and there is no Run anyway.",
       "checksum": "Sources: Microsoft Learn, Microsoft Defender SmartScreen overview and Smart App Control overview."
+    },
+    "mac": {
+      "title": "macOS: why the first launch is blocked",
+      "why": "This version is signed ad hoc, not with an Apple Developer ID, and is not notarized by Apple. macOS therefore refuses the first launch and says that Apple could not verify the app.",
+      "steps": "Close the warning with Done. Open System Settings → Privacy & Security, and under Security click Open Anyway next to the message about Symvoulio (the button stays for about an hour). Enter your login password, click OK, then Open. Do this only for a download whose SHA-256 checksum matches the one on the release page.",
+      "source": "Source: Apple, «Open a Mac app from an unknown developer» (Mac User Guide)."
     },
     "limits": "Known limitations",
     "limit": {

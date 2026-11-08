@@ -1,4 +1,4 @@
-# Symvoulio Review Demo v0.2
+# Symvoulio Review Demo v0.3
 
 **Multi-provider document review with human approval.**
 
@@ -17,8 +17,8 @@ Model agreement is evidence, not approval.
 
 | | |
 |---|---|
-| Version | 0.2.0 (Windows) |
-| Platforms | Windows 10 (1809 or newer) and Windows 11. v0.2 also supports installer command pasting in macOS zsh and Linux bash; those platforms have not been measured on this Windows station. |
+| Version | 0.3.1 (Windows and macOS) |
+| Platforms | Windows 10 (1809 or newer) and Windows 11; macOS 13 Ventura or newer, one universal app for Apple Silicon and Intel (see [macOS](#macos)). Linux bash command pasting exists but is not measured. |
 | Providers | Claude Code and OpenAI Codex, installed and signed in by you |
 | License | MIT |
 
@@ -45,11 +45,11 @@ Claude Code and Codex each have their own login, and you sign in to each one sep
 
 ### 2. Install Symvoulio
 
-1. Download `Symvoulio_0.2.0_x64-setup.exe` and its `.sha256` file from the
-   [Releases page](https://github.com/vialian-dev/symvoulio/releases/tag/v0.2.0)
+1. Download `Symvoulio_0.3.1_x64-setup.exe` and its `.sha256` file from the
+   [Releases page](https://github.com/vialian-dev/symvoulio/releases/tag/v0.3.1)
 2. Check the download in PowerShell. The hash must equal the one in the `.sha256` file:
    ```powershell
-   (Get-FileHash .\Symvoulio_0.2.0_x64-setup.exe -Algorithm SHA256).Hash
+   (Get-FileHash .\Symvoulio_0.3.1_x64-setup.exe -Algorithm SHA256).Hash
    ```
 3. Run the installer. It installs for the current user in `%LOCALAPPDATA%\Symvoulio`, needs no administrator rights,
    and adds a Start menu entry, a desktop shortcut and an uninstall entry.
@@ -62,6 +62,8 @@ The installer is **not code-signed**, so Windows warns before it runs:
 
 With **Smart App Control** turned on, Windows blocks unsigned apps and offers no bypass. See
 [KNOWN_LIMITATIONS.md](KNOWN_LIMITATIONS.md).
+
+On a Mac, install from the `.dmg` instead: see [macOS](#macos).
 
 ### 3. First launch
 
@@ -89,7 +91,8 @@ Symvoulio's connection settings and files store connection metadata, not provide
 
 ## What you get
 
-Each run writes a folder under `%USERPROFILE%\Symvoulio\runs\<run id>\output\`:
+Each run writes a folder under `%USERPROFILE%\Symvoulio\runs\<run id>\output\` on Windows, and under
+`~/Library/Application Support/Symvoulio/workspace/runs/<run id>/output/` on macOS:
 
 ```text
 output/
@@ -119,8 +122,8 @@ The JSON files follow the public schemas in [schemas/](schemas/). `run_manifest.
     minimum rounds are not done, or while a revision exceeds your new-text limit;
   - it stops when none of these apply, or at your maximum rounds;
   - no model ever approves; the decision is always yours.
-- **Visible terminals.** Each provider panel is a real shell (PowerShell 7 if present, otherwise Windows PowerShell)
-  for sign-in and your own commands. «Paste command» types a command without pressing Enter.
+- **Visible terminals.** Each provider panel is a real shell for sign-in and your own commands: on Windows PowerShell 7
+  if present, otherwise Windows PowerShell; on macOS your login `zsh` (or `bash` as a login shell where zsh is missing). «Paste command» types a command without pressing Enter.
 - **Local first.** No Symvoulio server exists. Your documents leave your computer only through the provider CLIs you
   signed in to, under your accounts and their terms.
 
@@ -129,7 +132,9 @@ The JSON files follow the public schemas in [schemas/](schemas/). `run_manifest.
 Prerequisites:
 - Rust (the version is pinned in `rust-toolchain.toml`);
 - Node.js 22 with npm;
-- on Windows, the Visual Studio C++ build tools and WebView2.
+- on Windows, the Visual Studio C++ build tools and WebView2;
+- on macOS, the Xcode Command Line Tools (`xcode-select --install`) and both Rust targets
+  (`rustup target add aarch64-apple-darwin x86_64-apple-darwin`).
 
 Use a filesystem that supports npm workspace links. Network shares that reject junctions or symlinks cannot link the local design system package.
 
@@ -150,6 +155,53 @@ npx playwright test --workers=1                 # UI in the browser (canned mode
 
 Opened in a plain browser (`npm run dev`), the UI runs in a canned demo mode with sample data. The desktop app uses the
 real backend. [installers/windows/](installers/windows/) describes the cross-build of the Windows installer on Linux.
+On a Mac, `sh installers/macos/build.sh` builds the universal `Symvoulio.app` and the `.dmg` (see [macOS](#macos)).
+
+## macOS
+
+Symvoulio 0.3 runs on macOS 13 Ventura or newer. One universal app runs natively on Apple Silicon and on Intel Macs.
+
+### Install from the .dmg
+
+1. Download `Symvoulio_0.3.1_universal.dmg` and its `.sha256` file from the Releases page.
+2. Check the download in Terminal. The hash must equal the one in the `.sha256` file:
+   ```bash
+   shasum -a 256 ~/Downloads/Symvoulio_0.3.1_universal.dmg
+   ```
+3. Open the `.dmg` and drag **Symvoulio** onto the **Applications** shortcut next to it.
+4. Eject the disk image, then start Symvoulio from **Applications**.
+
+### First launch
+
+The 0.3.1 `.dmg` and the app are signed with an Apple Developer ID certificate and notarized by Apple, so a download
+whose SHA-256 matches the release page opens without the «Open Anyway» step. macOS may ask once whether to open an app
+downloaded from the internet: click **Open**.
+
+Builds you make yourself with `installers/macos/build.sh` and no Developer ID are signed ad hoc and not notarized.
+macOS then refuses the first launch; allow it once, as Apple describes in
+[Open a Mac app from an unknown developer](https://support.apple.com/guide/mac-help/open-a-mac-app-from-an-unknown-developer-mh40616/mac):
+System Settings → Privacy & Security → **Open Anyway** next to the message about Symvoulio.
+
+### Install the providers on macOS
+
+On System check, click **Install** for a missing CLI: the app types the vendor's official command into that provider's
+panel, and you press Enter yourself. The commands, from the vendors' pages (read 05.11.2026):
+
+| Provider | Install (macOS zsh or bash) | Source |
+|---|---|---|
+| Claude Code | `curl -fsSL https://claude.ai/install.sh \| bash` | https://code.claude.com/docs/en/setup |
+| Codex | `curl -fsSL https://chatgpt.com/codex/install.sh \| sh` | https://github.com/openai/codex |
+
+Homebrew (`brew install --cask claude-code`, `brew install --cask codex`) and npm (`npm install -g @openai/codex`)
+installations are found too. An app opened from Finder does not get your shell's PATH, so Symvoulio also looks in
+`/opt/homebrew/bin`, `/usr/local/bin`, `~/.local/bin`, `~/.npm-global/bin`, the Codex package folder and your login
+shell's PATH. Then, on «Connect Claude Code» and «Connect Codex», click **Sign in**: the app runs the official login
+(`claude auth login`, `codex login`) in that provider's panel, and you finish the sign-in in your browser.
+
+### Where Symvoulio keeps its data on macOS
+
+Settings and runs live in `~/Library/Application Support/Symvoulio/` (`settings.json` and `workspace/`). To remove
+everything, quit Symvoulio, delete `Symvoulio.app` from Applications and delete that folder.
 
 ## Statements
 
@@ -173,7 +225,7 @@ Symvoulio Review Demo was designed, built and verified by the Mensurabilitas Aut
 
 ## More
 
-- [KNOWN_LIMITATIONS.md](KNOWN_LIMITATIONS.md): what v0.2 does not do
+- [KNOWN_LIMITATIONS.md](KNOWN_LIMITATIONS.md): what v0.3 does not do
 - [SECURITY.md](SECURITY.md): reporting a vulnerability, and what the app does with your data
 - [CHANGELOG.md](CHANGELOG.md)
 - [CONTRIBUTING.md](CONTRIBUTING.md)

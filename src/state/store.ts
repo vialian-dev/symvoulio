@@ -58,6 +58,9 @@ export interface State {
   runs: Run[]
   speed: number
   checking: boolean
+  /** F2: «Sign in» started the provider's login in its panel and the app waits for the browser sign-in. */
+  signingIn: Record<Provider, boolean>
+  signInMethod: Record<Provider, 'subscription' | 'api_key'>
 }
 
 const KEY = 'symvoulio.setup'
@@ -115,6 +118,8 @@ function initial(): State {
     runs: isDesktop ? [] : seedRuns(),
     speed: speedParam > 0 && speedParam <= 50 ? speedParam : 1,
     checking: false,
+    signingIn: { claude: false, codex: false },
+    signInMethod: { claude: 'subscription', codex: 'subscription' },
   }
 }
 
@@ -143,7 +148,14 @@ function settingsChange(patch: Partial<State> | ((s: State) => Partial<State>)) 
   set(patch)
   if (isDesktop) return desktop('settings', [previous])
 }
-export function finishSetup() { return settingsChange({ setupDone: true }) }
+/** Finishing the wizard leaves both panels at a clean prompt: no install transcript, no typed command (F4). */
+export function finishSetup() {
+  // macOS and Linux only; Windows keeps the 0.3.0 behaviour (review r1).
+  void import('../services/platform').then(({ appSignIn, currentOs }) => {
+    if (appSignIn(currentOs())) for (const p of ['claude', 'codex'] as const) void resetProviderPanel(p)
+  })
+  return settingsChange({ setupDone: true })
+}
 export function runSetupAgain() { return settingsChange({ setupDone: false }) }
 export function setAuthor(p: Provider) { return settingsChange({ author: p }) }
 export function swapRoles() { return settingsChange(s => ({ author: other(s.author) })) }
@@ -210,6 +222,63 @@ export function checkConnection(p: Provider): Promise<boolean> {
     set((s) => ({ conn: { ...s.conn, [p]: { ...s.conn[p], connected: ok, method: ok ? (s.conn[p].method ?? 'subscription') : null } } }))
     done(ok)
   }, 600 / state.speed))
+}
+
+const LOGIN: Record<Provider, string> = { claude: 'claude auth login', codex: 'codex login' }
+
+/** F2 «Sign in»: the app runs the provider's official login command in its panel (it types the command and presses
+ *  Enter itself), so the user only finishes the sign-in in the browser. Resolves true once the provider reports
+ *  connected; the panel is then reset to a clean prompt (F4). */
+export async function signIn(p: Provider): Promise<boolean> {
+  if (state.signingIn[p]) return false
+  // Each attempt has its own number; «Cancel» or a newer attempt makes an older one stale, and a stale attempt never
+  // connects, resets the panel or clears the newer attempt's state (review r1).
+  const attempt = ++signInAttempts[p]
+  const current = () => signInAttempts[p] === attempt
+  set((s) => ({ signingIn: { ...s.signingIn, [p]: true } }))
+  patchShell(p, (sh) => ({ ...sh, pasteError: undefined }))
+  try {
+    if (isDesktop) return Boolean(await desktop('signIn', [p, current]))
+    patchShell(p, (sh) => ({ ...sh, pending: LOGIN[p], pendingKind: 'login' }))
+    pressEnter(p)
+    await new Promise((done) => setTimeout(done, 900 / state.speed))
+    if (!current()) return false
+    set((s) => ({ conn: { ...s.conn, [p]: { ...s.conn[p], connected: true, method: 'subscription' } } }))
+    await resetProviderPanel(p)
+    return true
+  } catch (error) {
+    if (current()) patchShell(p, (sh) => ({ ...sh, pasteError: String(error instanceof Error ? error.message : error) }))
+    return false
+  } finally {
+    if (current()) set((s) => ({ signingIn: { ...s.signingIn, [p]: false } }))
+  }
+}
+const signInAttempts: Record<Provider, number> = { claude: 0, codex: 0 }
+
+/** «Cancel» while waiting for the browser sign-in: the app stops waiting (the attempt goes stale); the panel is left as
+ *  it is. */
+export function cancelSignIn(p: Provider) {
+  signInAttempts[p]++
+  set((s) => ({ signingIn: { ...s.signingIn, [p]: false } }))
+}
+
+/** The sign-in method chosen on S2/S3; the rail help follows it (F5, review r1). */
+export function setSignInMethod(p: Provider, method: 'subscription' | 'api_key') {
+  set((s) => ({ signInMethod: { ...s.signInMethod, [p]: method } }))
+}
+
+/** F4: a clean idle prompt in a provider panel. The desktop app restarts the panel's shell (a panel that is not on
+ *  screen is closed and opens fresh next time); the browser stand clears its lines. */
+export async function resetProviderPanel(p: Provider): Promise<void> {
+  if (isDesktop) {
+    const { resetPanel } = await import('../services/panelShells')
+    if (!(await resetPanel(p).catch(() => false))) {
+      const { closePanel } = await import('../services/backend')
+      await closePanel(p).catch(() => { /* no panel yet */ })
+    }
+    return
+  }
+  patchShell(p, (sh) => ({ ...freshShell(), loginRan: sh.loginRan }))
 }
 
 export function promptFor(p: Provider) {

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@symvoulio/ui/components'
 import { humanQuestions } from './humanQuestions'
+import { AnsweredBy } from './AnsweredBy'
 import { useRunData } from '../services/useRunData'
 import { decideIssue, type Run } from '../state/store'
 export function HumanQuestions({ run, only }: { run: Run; only?: string }) {
@@ -15,7 +16,7 @@ export function HumanQuestions({ run, only }: { run: Run; only?: string }) {
   const questions = humanQuestions(snapshot).filter(q => !only || q.id === only)
   if (!questions.length) return null
   return <>
-    <label>{t('humanQuestions.answeredBy')}<input placeholder={t('humanQuestions.yourName')} value={name} onChange={e => setName(e.target.value)} /></label>
+    <AnsweredBy label={t('humanQuestions.answeredBy')} placeholder={t('humanQuestions.yourName')} value={name} onChange={setName} />
     <section className="my-4 space-y-2" data-testid="human-questions">
     <h2>{t('humanQuestions.title')}</h2>
     {questions.map(q => <div key={q.id} className="rounded-lg border border-[var(--line)] p-3">

@@ -2,7 +2,8 @@
 // Copyright (c) 2026 Vialian
 // S12 Settings: the shell under each panel (the only place the shell is named, map 0.4), provider versions with
 // Refresh, the policy defaults (→ S5), the workspace folder, «Run setup again» (→ S1), and the language: English only.
-import { availableShells } from '../services/backend'
+import { availableShells, installEnvironment } from '../services/backend'
+import { shellHintKey } from '../lib/platformNote'
 import { ServiceError } from '../services/ServiceError'
 import { usePanelShell } from '../services/panelShells'
 import { useEffect, useState } from 'react'
@@ -35,6 +36,9 @@ export function SettingsScreen() {
   const s = useStore((x) => x)
   const [available, setAvailable] = useState<string[] | null>(null)
   useEffect(() => { void availableShells().then(setAvailable).catch(() => setAvailable([])) }, [])
+  // F7: the shell note names the shells of this OS only (no PowerShell text on a Mac).
+  const [os, setOs] = useState<string | undefined>()
+  useEffect(() => { void installEnvironment().then(e => setOs(e.os)).catch(() => setOs(undefined)) }, [])
   const [saving, setSaving] = useState(false)
   const [ws, setWs] = useState(s.workspace)
   const p = s.policy
@@ -54,7 +58,7 @@ export function SettingsScreen() {
                 </select>}
               </label>
             ))}
-            <p className="text-[12px] text-[var(--muted)]">{t('s12.shellHint')}</p>
+            <p data-testid="shell-hint" className="text-[12px] text-[var(--muted)]">{t(shellHintKey(os))}</p>
           </div>
         </Section>
 

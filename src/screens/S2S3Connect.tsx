@@ -4,6 +4,9 @@
 // types the official login command into the provider's panel WITHOUT running it; the user presses Enter there. «Check
 // connection» pastes the status command and reads the stubbed status. The app stores only connected yes/no and the
 // sign-in method — never an email, organisation or credential.
+// 0.3.1 on macOS and Linux (Windows keeps the flow above unchanged): account sign-in is four steps without picture
+// slots; «Sign in» runs the official login in the panel (the app presses Enter) and the status turns connected by itself,
+// then the panel is reset (F2, F4); the help for the step is at the bottom of the left rail (F5).
 import { apiKeyLogin } from '../lib/shellCommands'
 import { usePanelShell } from '../services/panelShells'
 import { isDesktop } from '../services/env'
@@ -11,12 +14,13 @@ import { useState, type ReactNode } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { AnimatePresence, motion } from 'motion/react'
-import { ArrowLeft, ArrowRight, CheckCircle2, ClipboardPaste, CornerDownLeft, Globe, ImageIcon, Info, KeyRound, PlugZap, ShieldCheck } from 'lucide-react'
+import { ArrowLeft, ArrowRight, CheckCircle2, ClipboardPaste, CornerDownLeft, Globe, ImageIcon, Info, KeyRound, LogIn, PlugZap, ShieldCheck } from 'lucide-react'
 import { Button, Card, cx } from '@symvoulio/ui/components'
 import { Page, Stepper } from '../components/Page'
 import { Segmented } from '../components/ui/controls'
 import type { Provider } from '../data/sample'
-import { checkConnection, clearError, pasteCommand, useStore } from '../state/store'
+import { cancelSignIn, checkConnection, clearError, pasteCommand, setSignInMethod, signIn, useStore } from '../state/store'
+import { appSignIn, usePlatform } from '../services/platform'
 
 const CMD: Record<Provider, { login: string; status: string }> = {
   claude: { login: 'claude auth login', status: 'claude auth status' },
@@ -44,7 +48,10 @@ export function Connect({ provider: p }: { provider: Provider }) {
   const preferred = useStore((s) => s.shellName[p])
   const actualShell = usePanelShell(p)
   const loginShell = isDesktop ? actualShell : preferred
-  const [method, setMethod] = useState<'subscription' | 'api_key'>('subscription')
+  const method = useStore((s) => s.signInMethod[p])
+  const setMethod = (m: 'subscription' | 'api_key') => setSignInMethod(p, m)
+  const mac = appSignIn(usePlatform())
+  const signingIn = useStore((s) => s.signingIn[p])
   const [checking, setChecking] = useState(false)
   const [result, setResult] = useState<'ok' | 'no' | null>(null)
   const name = t(`provider.${p}`)
@@ -74,6 +81,31 @@ export function Connect({ provider: p }: { provider: Provider }) {
       shot: t('s2.shot.status'), icon: <ShieldCheck size={16} />,
     },
   ]
+  const code = (text: string) => <code className="rounded bg-[var(--term-bg)] px-1.5 py-0.5 font-[family-name:var(--font-mono)] text-[12px] text-[var(--ink-2)]">{text}</code>
+  const paste = <Button data-testid="paste-login" variant={method === 'subscription' ? 'quiet' : undefined} disabled={!loginCmd || signingIn} onClick={() => pasteCommand(p, loginCmd, method === 'subscription' ? 'login' : 'login_key')}><ClipboardPaste size={14} />{t('s2.paste')}</Button>
+  const checkStep = (n: number) => ({
+    n, title: t('s2.s5.title'), text: <>{t(method === 'subscription' ? 's2.s5.textAuto' : 's2.s5.text')} {code(CMD[p].status)}</>,
+    action: <Button data-testid="check-connection" variant="primary" disabled={checking} onClick={() => void check()}><PlugZap size={14} />{checking ? t('s2.checking') : t('s2.check')}</Button>,
+  })
+  // macOS: account sign-in in four steps, the app runs the login (F2); API key: the five steps, the user runs it.
+  const macSteps: { n: number; title: string; text: ReactNode; action?: ReactNode }[] = method === 'subscription' ? [
+    { n: 1, title: t('s2.s1.title'), text: t(`s2.s1.textAuto.${p}`, { name }) },
+    {
+      n: 2, title: t('s2.signIn.title'), text: <>{t('s2.signIn.text', { name })} {code(CMD[p].login)}</>,
+      action: <div className="flex flex-wrap items-center gap-2">
+        <Button data-testid="sign-in" variant="primary" disabled={signingIn || conn.connected || !conn.installed} onClick={() => void signIn(p)}><LogIn size={14} />{signingIn ? t('s2.signIn.waiting') : t('s2.signIn.button')}</Button>
+        {signingIn ? <Button data-testid="sign-in-cancel" variant="quiet" onClick={() => cancelSignIn(p)}>{t('common.cancel')}</Button> : paste}
+      </div>,
+    },
+    { n: 3, title: t('s2.s4.title.subscription'), text: t(`s2.s4.text.${p}.subscription`) },
+    checkStep(4),
+  ] : [
+    { n: 1, title: t('s2.s1.title'), text: t(`s2.s1.text.${p}`, { name }) },
+    { n: 2, title: t('s2.s2.title'), text: <>{t('s2.s2.text', { name })} {code(displayCmd)}{!loginCmd && <span role="status"> {t('s2.shellRequired')}</span>}</>, action: paste },
+    { n: 3, title: t('s2.s3.title'), text: t('s2.s3.text', { name }) },
+    { n: 4, title: t('s2.s4.title.api_key'), text: t(`s2.s4.text.${p}.api_key`) },
+    checkStep(5),
+  ]
 
   return (
     <Page id={p === 'claude' ? 'S2' : 'S3'} caption={t('setup.caption')} title={t('s2.title')} accent={name}>
@@ -98,10 +130,26 @@ export function Connect({ provider: p }: { provider: Provider }) {
         )}
       </AnimatePresence>
       {result === 'no' && !conn.connected && (
-        <p data-testid="not-connected" role="status" className="mb-4 rounded-lg border border-[var(--value)] bg-[var(--value-soft)] px-4 py-2 text-[13px] text-[var(--value-ink)]">{t('s2.notYet')}</p>
+        <p data-testid="not-connected" role="status" className="mb-4 rounded-lg border border-[var(--value)] bg-[var(--value-soft)] px-4 py-2 text-[13px] text-[var(--value-ink)]">{t(mac && method === 'subscription' ? 's2.notYetAuto' : 's2.notYet')}</p>
       )}
 
-      <ol className="relative space-y-3">
+      {mac ? <ol className="relative space-y-3">
+        {macSteps.map((s) => (
+          <li key={s.n} data-testid={`guide-step-${s.n}`}>
+            <Card className={cx('grid grid-cols-[36px_minmax(0,1fr)] gap-4 p-4', s.n === 2 && (pasted || signingIn) && 'border-[var(--accent)]')}>
+              <span className="grid size-8 place-items-center rounded-full bg-[var(--accent-soft)] text-[13px] font-semibold text-[var(--accent)]">{s.n}</span>
+              <div className="min-w-0">
+                <h3 className="text-[14.5px] font-semibold">{s.title}</h3>
+                <p className="mt-1 text-[13px] leading-relaxed text-[var(--ink-2)]">{s.text}</p>
+                {s.action ? <div className="mt-3">{s.action}</div> : null}
+                {s.n === 2 && shell.pasteError ? <p role="alert" className="mt-2 text-[12px] text-[var(--error)]">{shell.pasteError}</p> : null}
+                {s.n === 2 && pasted ? <p data-testid="typed-hint" className="mt-2 text-[12px] text-[var(--accent)]">{t('s2.typedHint')}</p> : null}
+                {s.n === 2 && signingIn ? <p data-testid="signing-in" role="status" className="mt-2 text-[12px] text-[var(--accent)]">{t('s2.signIn.hint', { name })}</p> : null}
+              </div>
+            </Card>
+          </li>
+        ))}
+      </ol> : <ol className="relative space-y-3">
         {steps.map((s) => (
           <li key={s.n} data-testid={`guide-step-${s.n}`}>
             <Card className={cx('grid grid-cols-[36px_minmax(0,1fr)_168px] gap-4 p-4 max-[1400px]:grid-cols-[36px_minmax(0,1fr)_144px]', s.n === 2 && pasted && 'border-[var(--accent)]')}>
@@ -117,8 +165,8 @@ export function Connect({ provider: p }: { provider: Provider }) {
             </Card>
           </li>
         ))}
-      </ol>
-      <p className="mt-4 flex items-center gap-2 text-[12.5px] text-[var(--muted)]"><ShieldCheck size={14} />{t('s2.never')}</p>
+      </ol>}
+      <p className="mt-4 flex items-center gap-2 text-[12.5px] text-[var(--muted)]"><ShieldCheck size={14} />{t(mac ? 's2.neverAuto' : 's2.never')}</p>
 
       <div className="mt-6 flex items-center gap-2">
         <Button data-testid="back" onClick={() => nav(p === 'claude' ? '/setup/system' : '/setup/claude')}><ArrowLeft size={14} />{t('common.back')}</Button>
