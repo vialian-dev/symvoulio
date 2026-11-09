@@ -47,10 +47,10 @@ Symvoulio helps you review most text-based business documents. It does not promi
 Measured on one Mac: MacBook Pro M5 (Apple Silicon), macOS 27.0.1 — over SSH on 05.11.2026, and on 08.11.2026 on
 the screen (0.3.1, notarized build) with real Claude Code and Codex sign-ins.
 
-- **Notarized release build only.** The 0.3.1 `.dmg` and app on the release page are signed with an Apple Developer
+- **Notarized release build only.** The 0.3.2 `.dmg` and app on the release page are signed with an Apple Developer
   ID and notarized. A build you make yourself without a Developer ID is signed ad hoc, and macOS blocks its first
-  launch until you choose System Settings → Privacy & Security → Open Anyway. The About screen of 0.3.1 still
-  describes that ad hoc case («not notarized by Apple») also in the notarized build; the text is wrong, the app is not.
+  launch until you choose System Settings → Privacy & Security → Open Anyway. The About screen distinguishes the
+  notarized release from this ad hoc case.
 - **Measured on macOS 27.0.1 only.** The app declares macOS 13 Ventura as its minimum; versions 13 to 26 are not
   measured.
 - **Intel Macs not measured on hardware.** The app is one universal build (`x86_64` and `arm64`). Its Rust tests
@@ -69,20 +69,6 @@ the screen (0.3.1, notarized build) with real Claude Code and Codex sign-ins.
   default; open it from the Export screen or with Finder → Go → Go to Folder.
 - **Bundle identifier.** The app keeps the identifier `com.symvoulio.app` of the Windows version. Tauri warns that an
   identifier ending in `.app` is not recommended on macOS; changing it would move the Windows settings folder.
-
-## Known small issues in 0.3.1
-
-Seen on the Mac on 08.11.2026; they do not stop a review.
-
-- **Run setup again keeps you in the wizard.** During a repeated setup, clicking Reviews in the left rail returns to
-  step 1 (System check); you leave the wizard only through Finish setup. The rail highlights Settings meanwhile.
-- **Stop and the Reviewer panel can disagree.** After Stop the run may say that the last revision's review did not
-  finish, while the Reviewer's panel shows that review as completed. The cause is not yet established.
-- **Settings → Language says «English only in v0.2.»** The text is out of date; the app is English only.
-- **The Author panel shows terse lines** such as «system: provider event» and «assistant: provider event» instead of
-  readable progress.
-- **«Open sample review» opens a finished demonstration review**, not a new run. For a live run use New review → «Use
-  the sample document»; the review name and objective are not filled in for you.
 
 ## Not in v0.3
 - The `.msi` installer, a measured Linux version, and providers other than Claude Code and Codex.

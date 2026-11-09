@@ -99,6 +99,16 @@ pub enum RunEventDto {
         message: String,
     },
 }
+impl RunEventDto {
+    fn with_raw_output(mut self, enabled: bool) -> Self {
+        if !enabled {
+            if let Self::Line { raw, .. } = &mut self {
+                *raw = None;
+            }
+        }
+        self
+    }
+}
 impl From<RunEvent> for RunEventDto {
     fn from(e: RunEvent) -> Self {
         match e {
@@ -640,6 +650,7 @@ impl AppState {
         let (tx, rx) = std::sync::mpsc::sync_channel(1);
         let read_path = path.clone();
         let worker = std::thread::spawn(move || {
+            let event_control = ctl.clone();
             let storage_notified = std::sync::atomic::AtomicBool::new(false);
             let on = |event: RunEvent| {
                 if matches!(&event, RunEvent::ProviderError { kind, .. } if kind == "storage") {
@@ -659,7 +670,10 @@ impl AppState {
                 }
                 if let Ok(s) = sink.lock() {
                     if let Some(ch) = s.as_ref() {
-                        let _ = ch.send(RunEventDto::from(event));
+                        let _ = ch.send(
+                            RunEventDto::from(event)
+                                .with_raw_output(event_control.raw_output.load(Ordering::SeqCst)),
+                        );
                     }
                 }
             };
@@ -1423,6 +1437,26 @@ mod tests {
         assert!(value.get("raw").is_none());
         assert!(value.get("readable").is_none());
         assert!(value.get("isStderr").is_none());
+        for enabled in [false, true] {
+            let summary = symvoulio_core::provider::CANCELLED_CALL_SUMMARY;
+            let dto = RunEventDto::from(RunEvent::Line {
+                provider: Provider::Codex,
+                role: Role::Reviewer,
+                line: symvoulio_core::provider::StreamLine {
+                    raw: summary.into(),
+                    readable: Some(summary.into()),
+                    is_stderr: false,
+                },
+            })
+            .with_raw_output(enabled);
+            let value = serde_json::to_value(dto).unwrap();
+            assert_eq!(value["summary"], summary);
+            if enabled {
+                assert_eq!(value["raw"], summary);
+            } else {
+                assert!(value.get("raw").is_none());
+            }
+        }
     }
     fn test_state(w: &Workspace) -> AppState {
         AppState {

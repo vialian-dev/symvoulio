@@ -3649,7 +3649,7 @@ dependencies = [
 
 [[package]]
 name = "symvoulio"
-version = "0.3.1"
+version = "0.3.2"
 dependencies = [
  "portable-pty",
  "proptest",
@@ -3666,7 +3666,7 @@ dependencies = [
 
 [[package]]
 name = "symvoulio-core"
-version = "0.3.1"
+version = "0.3.2"
 dependencies = [
  "docx-rs",
  "jsonschema",

@@ -17,7 +17,7 @@ Model agreement is evidence, not approval.
 
 | | |
 |---|---|
-| Version | 0.3.1 (Windows and macOS) |
+| Version | 0.3.2 (Windows and macOS) |
 | Platforms | Windows 10 (1809 or newer) and Windows 11; macOS 13 Ventura or newer, one universal app for Apple Silicon and Intel (see [macOS](#macos)). Linux bash command pasting exists but is not measured. |
 | Providers | Claude Code and OpenAI Codex, installed and signed in by you |
 | License | MIT |
@@ -45,11 +45,11 @@ Claude Code and Codex each have their own login, and you sign in to each one sep
 
 ### 2. Install Symvoulio
 
-1. Download `Symvoulio_0.3.1_x64-setup.exe` and its `.sha256` file from the
-   [Releases page](https://github.com/vialian-dev/symvoulio/releases/tag/v0.3.1)
+1. Download `Symvoulio_0.3.2_x64-setup.exe` and its `.sha256` file from the
+   [Releases page](https://github.com/vialian-dev/symvoulio/releases/tag/v0.3.2)
 2. Check the download in PowerShell. The hash must equal the one in the `.sha256` file:
    ```powershell
-   (Get-FileHash .\Symvoulio_0.3.1_x64-setup.exe -Algorithm SHA256).Hash
+   (Get-FileHash .\Symvoulio_0.3.2_x64-setup.exe -Algorithm SHA256).Hash
    ```
 3. Run the installer. It installs for the current user in `%LOCALAPPDATA%\Symvoulio`, needs no administrator rights,
    and adds a Start menu entry, a desktop shortcut and an uninstall entry.
@@ -163,17 +163,17 @@ Symvoulio 0.3 runs on macOS 13 Ventura or newer. One universal app runs natively
 
 ### Install from the .dmg
 
-1. Download `Symvoulio_0.3.1_universal.dmg` and its `.sha256` file from the Releases page.
+1. Download `Symvoulio_0.3.2_universal.dmg` and its `.sha256` file from the Releases page.
 2. Check the download in Terminal. The hash must equal the one in the `.sha256` file:
    ```bash
-   shasum -a 256 ~/Downloads/Symvoulio_0.3.1_universal.dmg
+   shasum -a 256 ~/Downloads/Symvoulio_0.3.2_universal.dmg
    ```
 3. Open the `.dmg` and drag **Symvoulio** onto the **Applications** shortcut next to it.
 4. Eject the disk image, then start Symvoulio from **Applications**.
 
 ### First launch
 
-The 0.3.1 `.dmg` and the app are signed with an Apple Developer ID certificate and notarized by Apple, so a download
+The 0.3.2 `.dmg` and the app are signed with an Apple Developer ID certificate and notarized by Apple, so a download
 whose SHA-256 matches the release page opens without the «Open Anyway» step. macOS may ask once whether to open an app
 downloaded from the internet: click **Open**.
 

@@ -389,7 +389,7 @@
     "caption": "Home",
     "title": "Your",
     "accent": "reviews",
-    "openSample": "Open sample review",
+    "openSample": "View finished sample review",
     "sample": "sample",
     "col": { "name": "Name and document", "date": "Date", "roles": "Author → Reviewer", "rounds": "Rounds", "state": "State", "document": "Document", "actions": "Actions" },
     "open": "Open",
@@ -402,7 +402,7 @@
     "deleteTitle": "Delete this review?",
     "deleteText": "«{{name}}» and its local records will be deleted. This cannot be undone.",
     "emptyTitle": "No reviews yet",
-    "emptyText": "Start a review with the sample document — a short business case with an unsourced forecast and totals that do not reconcile.",
+    "emptyText": "Start a live review with the sample document — a short business case with an unsourced forecast and totals that do not reconcile — or view a finished sample review.",
     "emptyNew": "New review with the sample"
   },
   "s12": {
@@ -421,7 +421,7 @@
     "saveFolder": "Save",
     "workspaceHint": "Runs, revisions and export packages are kept here, with a separate workspace per role.",
     "language": "Language",
-    "languageHint": "English only in v0.2.",
+    "languageHint": "English only.",
     "setup": "Setup",
     "setupText": "Check the providers, connect them and set roles and the default policy again.",
     "runSetup": "Run setup again"
@@ -429,7 +429,7 @@
   "s13": {
     "caption": "About & disclaimer",
     "subtitle": "Multi-provider document review with human approval",
-    "version": "Version 0.3.1 · Windows and macOS · prototype",
+    "version": "Version 0.3.2 · Windows and macOS · prototype",
     "versionDesktop": "Version {{version}} · {{os}}",
     "github": "GitHub: github.com/vialian-dev/symvoulio",
     "githubHint": "Source code, releases and issue reporting",
@@ -470,9 +470,9 @@
       "checksum": "Sources: Microsoft Learn, Microsoft Defender SmartScreen overview and Smart App Control overview."
     },
     "mac": {
-      "title": "macOS: why the first launch is blocked",
-      "why": "This version is signed ad hoc, not with an Apple Developer ID, and is not notarized by Apple. macOS therefore refuses the first launch and says that Apple could not verify the app.",
-      "steps": "Close the warning with Done. Open System Settings → Privacy & Security, and under Security click Open Anyway next to the message about Symvoulio (the button stays for about an hour). Enter your login password, click OK, then Open. Do this only for a download whose SHA-256 checksum matches the one on the release page.",
+      "title": "macOS: first launch",
+      "why": "The release download (.dmg and app) from the release page is signed with an Apple Developer ID and notarized by Apple, so it opens normally. Verify its SHA-256 checksum against the release page. macOS may ask once whether to open an app downloaded from the internet: click Open.",
+      "steps": "If you build the app yourself with installers/macos/build.sh without a Developer ID, it is signed ad hoc and not notarized. For that build, if macOS blocks the first launch, close the warning with Done. Open System Settings → Privacy & Security, and under Security click Open Anyway next to the message about Symvoulio (the button stays for about an hour). Enter your login password, click OK, then Open.",
       "source": "Source: Apple, «Open a Mac app from an unknown developer» (Mac User Guide)."
     },
     "limits": "Known limitations",

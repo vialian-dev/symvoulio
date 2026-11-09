@@ -580,8 +580,25 @@ pub fn validate_answer(
     Ok(())
 }
 
+pub const CANCELLED_CALL_SUMMARY: &str =
+    "Stopped: the run was stopped before this answer was saved; it is not used.";
+
 /// Controlled diagnostic representation: never interpolate provider-supplied strings.
 pub fn controlled_summary(raw: &str) -> String {
+    fn text_summary(words: usize) -> Option<String> {
+        (words > 0).then(|| format!("assistant text, {words} words"))
+    }
+    fn block_summary(block: &Value) -> Option<String> {
+        Some(match block["type"].as_str()? {
+            "text" | "text_delta" => {
+                return text_summary(block["text"].as_str()?.split_whitespace().count());
+            }
+            "thinking" | "redacted_thinking" | "thinking_delta" | "signature_delta" => "thinking",
+            "tool_use" if block["name"] == "StructuredOutput" => "writing the structured answer",
+            "tool_use" | "input_json_delta" => "calling a tool",
+            _ => return None,
+        }.into())
+    }
     let Ok(v) = serde_json::from_str::<Value>(raw) else {
         return "Provider event".into();
     };
@@ -591,49 +608,92 @@ pub fn controlled_summary(raw: &str) -> String {
     } else {
         &v
     };
-    let event = match v["type"].as_str().unwrap_or("") {
-        "assistant" => "assistant",
-        "system" => "system",
-        "result" | "turn.completed" => return "Completed".into(),
-        "thread.started" => "thread.started",
-        "turn.started" => "turn.started",
-        "item.started" => "item.started",
-        "item.updated" => "item.updated",
-        "item.completed" => "item.completed",
-        "content_block_start" => "content_block_start",
-        "content_block_delta" => "content_block_delta",
-        _ => return "Provider event".into(),
-    };
-    let words = v
-        .pointer("/message/content")
-        .and_then(Value::as_array)
-        .and_then(|items| {
-            items
-                .iter()
+    match v["type"].as_str().unwrap_or("") {
+        "system" => match v["subtype"].as_str().unwrap_or("") {
+            "init" => "session started".into(),
+            "api_retry" => match v["attempt"].as_number() {
+                Some(n) => format!("retrying the request, attempt {n}"),
+                None => "retrying the request".into(),
+            },
+            "thinking_tokens" => match v["estimated_tokens"].as_u64() {
+                Some(n) => format!("thinking, about {n} tokens"),
+                None => "thinking".into(),
+            },
+            "hook_started" | "hook_progress" => "running a hook".into(),
+            "hook_response" => "hook finished".into(),
+            "status" => "session status updated".into(),
+            "compact_boundary" => "conversation compacted".into(),
+            _ => "session info".into(),
+        },
+        "rate_limit_event" => match v["rate_limit_info"]["status"].as_str() {
+            Some("allowed") => "rate limit status: OK",
+            Some("allowed_warning") => "rate limit status: close to the limit",
+            Some("rejected") => "rate limit reached",
+            _ => "rate limit status",
+        }.into(),
+        "user" => {
+            if v.pointer("/message/content").and_then(Value::as_array)
+                .is_some_and(|items| items.iter().any(|i| i["type"] == "tool_result"))
+            {
+                "tool result received"
+            } else {
+                "input sent"
+            }.into()
+        }
+        "assistant" => {
+            let Some(items) = v.pointer("/message/content").and_then(Value::as_array) else {
+                return "assistant message".into();
+            };
+            let words = items.iter()
                 .filter(|i| i["type"] == "text")
                 .filter_map(|i| i["text"].as_str())
                 .map(|t| t.split_whitespace().count())
-                // A thinking/tool-only message is not a zero-word text message.
-                .reduce(|total, count| total + count)
-        })
-        .or_else(|| {
-            v.pointer("/content_block/text")
-                .and_then(Value::as_str)
-                .map(|t| t.split_whitespace().count())
-        })
-        .or_else(|| {
-            v.pointer("/item/text")
-                .and_then(Value::as_str)
-                .map(|t| t.split_whitespace().count())
-        })
-        .or_else(|| {
-            v.pointer("/delta/text")
-                .and_then(Value::as_str)
-                .map(|t| t.split_whitespace().count())
-        });
-    match words {
-        Some(n) if n > 0 => format!("{event}: assistant text, {n} words"),
-        _ => format!("{event}: provider event"),
+                .sum();
+            text_summary(words)
+                .or_else(|| items.iter().find(|i| i["type"] == "tool_use").and_then(block_summary))
+                .or_else(|| items.iter().find_map(block_summary))
+                .unwrap_or_else(|| "assistant message".into())
+        }
+        "message_start" => "answer started".into(),
+        "message_delta" | "message_stop" => "answer finished".into(),
+        "content_block_start" | "content_block_stop" => {
+            block_summary(&v["content_block"]).unwrap_or_else(|| match v["type"].as_str() {
+                Some("content_block_start") if v["content_block"]["type"] == "text" => "answer text started",
+                Some("content_block_start") => "answer section started",
+                _ => "answer section finished",
+            }.into())
+        }
+        "content_block_delta" => block_summary(&v["delta"])
+            .unwrap_or_else(|| "answer updated".into()),
+        "result" | "turn.completed" => "Completed".into(),
+        "thread.started" => "session started".into(),
+        "turn.started" => "turn started".into(),
+        "turn.failed" | "error" => "provider reported an error".into(),
+        "item.started" | "item.updated" | "item.completed" => {
+            let completed = v["type"] == "item.completed";
+            match v["item"]["type"].as_str().unwrap_or("") {
+                "reasoning" => "reasoning",
+                "agent_message" => {
+                    return v["item"]["text"].as_str()
+                        .and_then(|t| text_summary(t.split_whitespace().count()))
+                        .unwrap_or_else(|| "assistant message".into());
+                }
+                "command_execution" if completed => "command finished",
+                "command_execution" => "running a command",
+                "file_change" if completed => "files changed",
+                "file_change" => "changing files",
+                "mcp_tool_call" if completed => "tool finished",
+                "mcp_tool_call" => "calling a tool",
+                "web_search" if completed => "web search finished",
+                "web_search" => "searching the web",
+                "todo_list" => "task list updated",
+                "error" => "provider reported an error",
+                _ if completed => "activity finished",
+                _ if v["type"] == "item.started" => "activity started",
+                _ => "activity updated",
+            }.into()
+        }
+        _ => "other provider activity".into(),
     }
 }
 

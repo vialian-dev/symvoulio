@@ -84,7 +84,7 @@ cat > "$stubs/npx" <<'STUB'
 #!/bin/sh
 printf 'npx %s cert_env=%s api_key_env=%s\n' "$*" "${APPLE_CERTIFICATE:+set}" "${APPLE_API_KEY:+set}" >> "$STUB_LOG"
 mkdir -p "target/$SYMVOULIO_MAC_TARGET/release/bundle/dmg" "target/$SYMVOULIO_MAC_TARGET/release/bundle/macos/Symvoulio.app"
-: > "target/$SYMVOULIO_MAC_TARGET/release/bundle/dmg/Symvoulio_0.3.1_universal.dmg"
+: > "target/$SYMVOULIO_MAC_TARGET/release/bundle/dmg/Symvoulio_0.3.2_universal.dmg"
 STUB
 chmod +x "$stubs"/*
 # run NAME EXPECTED_LOG_SUBSTRINGS... -- VAR=value...

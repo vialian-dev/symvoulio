@@ -31,6 +31,8 @@ test('install outside PATH refreshes the existing panel and survives relaunch', 
     }
     await check()
     a = await relaunch(a)
+    await a.page.getByTestId('nav-settings').click()
+    await a.page.getByTestId('run-setup').click()
     await check()
     expect(readFileSync(pathFile, 'utf8')).toBe('')
   } finally { await a.stop() }

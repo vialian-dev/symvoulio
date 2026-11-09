@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Vialian
-// S11 Reviews, the home screen: the list of runs with their state; Open, Restart from revision, Delete; «Open
+// S11 Reviews, the home screen: the list of runs with their state; Open, Restart from revision, Delete; «View finished
 // sample review» shows a finished demo deliberation without signing in; an empty list invites a new review.
 // The hero banner of the product sits above the title (BANNER_PLACES: S11 is the home screen).
 // At the minimum window (1280 px, panels at 38 %) every column and action fits without sideways scroll: a fixed

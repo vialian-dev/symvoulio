@@ -1,6 +1,6 @@
 {
   "name": "@symvoulio/ui",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "private": true,
   "description": "The UI kit used by Symvoulio: tokens, frame, components, collapsing banners and internationalization.",
   "type": "module",

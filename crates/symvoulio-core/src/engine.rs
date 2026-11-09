@@ -807,6 +807,15 @@ fn provider_error(
     on: &impl Fn(RunEvent),
 ) -> Result<()> {
     if matches!(e, CallError::Cancelled) {
+        on(RunEvent::Line {
+            provider: p,
+            role,
+            line: StreamLine {
+                raw: CANCELLED_CALL_SUMMARY.into(),
+                readable: Some(CANCELLED_CALL_SUMMARY.into()),
+                is_stderr: false,
+            },
+        });
         event(
             s,
             TimelineKind::Stopped,

@@ -290,6 +290,130 @@ fn slow_stop_keeps_first_round_and_kills_within_three_seconds() {
     assert!(run.join("output/reviews/review_01.json").exists());
 }
 #[test]
+fn cancelled_call_after_completed_event_ends_with_stopped_line() {
+    let _guard = ENV.lock().unwrap();
+    let _env = Env::new();
+    struct CompleteThenCancel {
+        provider: Provider,
+        role: Role,
+    }
+    impl ProviderClient for CompleteThenCancel {
+        fn provider(&self) -> Provider {
+            self.provider
+        }
+        fn call(
+            &self,
+            req: &CallRequest,
+            sink: &mut dyn FnMut(StreamLine),
+            cancel: &CancelToken,
+        ) -> std::result::Result<CallOutcome, CallError> {
+            if req.round == 3 && req.role == self.role {
+                sink(StreamLine {
+                    raw: if self.provider == Provider::Codex {
+                        r#"{"type":"turn.completed"}"#
+                    } else {
+                        r#"{"type":"result"}"#
+                    }
+                    .into(),
+                    readable: None,
+                    is_stderr: false,
+                });
+                assert!(
+                    cancel.load(Ordering::SeqCst),
+                    "Stop must land before the call returns"
+                );
+                return Err(CallError::Cancelled);
+            }
+            match self.provider {
+                Provider::Claude => ClaudeCli.call(req, sink, cancel),
+                Provider::Codex => CodexCli.call(req, sink, cancel),
+            }
+        }
+    }
+    for (role, raw_output) in [
+        (Role::Reviewer, false),
+        (Role::Reviewer, true),
+        (Role::Author, false),
+        (Role::Author, true),
+    ] {
+        let dir = tempfile::tempdir().unwrap();
+        let cfg = config(dir.path());
+        let run = cfg.run_dir.clone();
+        let control = Arc::new(RunControl::default());
+        // The controlled cancellation line is readable in either output mode.
+        control.raw_output.store(raw_output, Ordering::SeqCst);
+        let target_call = AtomicBool::new(false);
+        let events = Mutex::new(Vec::new());
+        let s = start(
+            cfg,
+            (
+                Arc::new(CompleteThenCancel {
+                    provider: Provider::Claude,
+                    role,
+                }),
+                Arc::new(CompleteThenCancel {
+                    provider: Provider::Codex,
+                    role,
+                }),
+            ),
+            control.clone(),
+            |event| {
+                if matches!(&event, RunEvent::Phase { round: 3, role: r, .. } if *r == role) {
+                    target_call.store(true, Ordering::SeqCst);
+                }
+                if matches!(&event, RunEvent::Line { role: r, line, .. }
+                    if *r == role && target_call.load(Ordering::SeqCst)
+                        && line.readable.as_deref() == Some("Completed"))
+                {
+                    control.stop();
+                }
+                events.lock().unwrap().push(event);
+            },
+        )
+        .unwrap();
+        assert_eq!(
+            (s.state, s.stop_reason),
+            (RunState::Stopped, Some(StopReason::UserStop))
+        );
+        assert_eq!(s.rounds_done, 2);
+        assert_eq!(s.rounds.len(), 2);
+        assert_eq!(s.pending_revision, (role == Role::Reviewer).then_some(3));
+        assert!(!run.join("output/reviews/review_03.json").exists());
+        let provider = if role == Role::Author {
+            Provider::Claude
+        } else {
+            Provider::Codex
+        };
+        let events = events.lock().unwrap();
+        let lines: Vec<_> = events
+            .iter()
+            .filter_map(|event| match event {
+                RunEvent::Line {
+                    provider: p,
+                    role: r,
+                    line,
+                } if *p == provider && *r == role => Some(line),
+                _ => None,
+            })
+            .collect();
+        let stopped = "Stopped: the run was stopped before this answer was saved; it is not used.";
+        assert_eq!(lines.last().unwrap().readable.as_deref(), Some(stopped));
+        assert_eq!(
+            lines[lines.len() - 2].readable.as_deref(),
+            Some("Completed")
+        );
+        assert_eq!(
+            lines
+                .iter()
+                .filter(|line| line.readable.as_deref() == Some(stopped))
+                .count(),
+            1
+        );
+        assert_eq!(lines.last().unwrap().raw, stopped);
+        assert!(!lines.last().unwrap().is_stderr);
+    }
+}
+#[test]
 fn timeout_and_cancel_are_bounded() {
     let _guard = ENV.lock().unwrap();
     let _env = Env::new();

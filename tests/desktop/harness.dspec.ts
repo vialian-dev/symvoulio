@@ -13,7 +13,7 @@ test('harness: isolated data dir, real IPC, fake CLI run', async () => {
     const settings = await ipc<{ workspace: string }>(app.page, 'settings_get')
     expect(settings.workspace).toBe(join(app.dataDir, 'workspace'))
     const info = await ipc<{ version: string }>(app.page, 'app_info')
-    expect(info.version).toBe('0.3.1')
+    expect(info.version).toBe('0.3.2')
     await expect(app.page.locator('[data-screen="S11"]')).toBeVisible()
     expect(existsSync(join(app.dataDir, 'settings.json'))).toBe(true)
     expect(readdirSync(app.dataDir)).toContain('webview2')

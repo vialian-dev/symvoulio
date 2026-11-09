@@ -3,6 +3,22 @@
 All notable changes are listed here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 the version numbers follow [Semantic Versioning](https://semver.org/).
 
+## [0.3.2] — 2026-11-08 — small fixes
+
+### Fixed
+- «Run setup again» no longer traps you in the wizard: the left rail leaves it, and your settings are kept.
+- After Stop, the provider panel says that an answer which arrived too late is not used, so the panel and the run
+  agree (the run discards an answer that was cut by Stop).
+- Settings → Language no longer mentions an old version.
+- Provider panel lines say what is happening (session started, thinking, reasoning, running a command, writing the
+  structured answer, …) instead of «provider event».
+- The Reviews button that opens the finished demonstration review is now called «View finished sample review»;
+  a live run of the sample starts from New review.
+- On macOS, About no longer says the app is not notarized: the release is signed with an Apple Developer ID and
+  notarized; the Open Anyway steps are only for builds you make yourself without a Developer ID.
+
+Windows and macOS behaviour is otherwise unchanged.
+
 ## [0.3.1] — 2026-11-08 — macOS support and fixes
 
 The first public release for macOS (it includes 0.3.0, which was not released on its own), with fixes from the first

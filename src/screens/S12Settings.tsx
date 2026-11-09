@@ -14,7 +14,7 @@ import { Badge, Button, Card, Caps } from '@symvoulio/ui/components'
 import { Page } from '../components/Page'
 import { inputCls } from '../components/ui/controls'
 import { PROVIDERS, other } from '../data/sample'
-import { checkAgain, runSetupAgain, setShellName, setWorkspace, useStore, type ShellName } from '../state/store'
+import { checkAgain, setShellName, setWorkspace, useStore, type ShellName } from '../state/store'
 
 function ActualShell({ panel }: { panel: 'claude' | 'codex' }) {
   const shell = usePanelShell(panel)
@@ -100,7 +100,7 @@ export function SettingsScreen() {
 
         <Section title={t('s12.setup')} testId="s12-setup">
           <p className="text-[13px] text-[var(--ink-2)]">{t('s12.setupText')}</p>
-          <Button data-testid="run-setup" className="mt-3" onClick={() => { runSetupAgain(); nav('/setup/system') }}><RotateCcw size={14} />{t('s12.runSetup')}</Button>
+          <Button data-testid="run-setup" className="mt-3" onClick={() => nav('/setup/system')}><RotateCcw size={14} />{t('s12.runSetup')}</Button>
         </Section>
       </div>
     </Page>

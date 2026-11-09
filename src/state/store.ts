@@ -156,7 +156,6 @@ export function finishSetup() {
   })
   return settingsChange({ setupDone: true })
 }
-export function runSetupAgain() { return settingsChange({ setupDone: false }) }
 export function setAuthor(p: Provider) { return settingsChange({ author: p }) }
 export function swapRoles() { return settingsChange(s => ({ author: other(s.author) })) }
 export function setPolicy(p: Policy) { return settingsChange({ policy: p }) }

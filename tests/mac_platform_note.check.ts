@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Vialian
-// MAC-03/MAC-15: on a Mac, S13 explains the Gatekeeper first launch (Open Anyway), not Windows SmartScreen.
+// MAC-03/MAC-15: S13 distinguishes notarized Mac releases from self-built ad hoc apps.
 // Run: npx jiti tests/mac_platform_note.check.ts
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
@@ -14,7 +14,16 @@ const mac = en.s13.mac
 for (const key of ['title', 'why', 'steps', 'source']) assert.ok(typeof mac[key] === 'string' && mac[key].length > 0, key)
 assert.match(mac.steps, /Privacy & Security/)
 assert.match(mac.steps, /Open Anyway/)
-assert.match(mac.why, /not notarized/)
+assert.match(mac.why, /release download.*release page/)
+assert.match(mac.why, /signed with an Apple Developer ID and notarized by Apple/)
+assert.match(mac.why, /opens normally/)
+assert.match(mac.why, /downloaded from the internet: click Open/)
+assert.doesNotMatch(mac.why, /not notarized/)
+assert.doesNotMatch(mac.title, /blocked/)
+assert.match(mac.steps, /build.*yourself.*installers\/macos\/build\.sh.*without a Developer ID/)
+assert.match(mac.steps, /signed ad hoc and not notarized/)
+assert.match(mac.steps, /For that build/)
+assert.match(mac.source, /Apple.*Open a Mac app from an unknown developer/)
 assert.doesNotMatch(JSON.stringify(mac), /SmartScreen|Windows/)
 
 const screen = await readFile(new URL('../src/screens/S13About.tsx', import.meta.url), 'utf8')

@@ -56,6 +56,66 @@ test.describe('Frame', () => {
 })
 
 test.describe('Wizard S1–S5', () => {
+  test('first launch keeps direct addresses and rail navigation in setup', async ({ page }) => {
+    for (const path of ['/reviews', '/new', '/settings', '/about', '/review/sample']) {
+      await page.goto(`${path}?${FAST}`)
+      await expect(page).toHaveURL(/\/setup\/system$/)
+      await expect(page.locator('[data-screen="S1"]')).toBeVisible()
+    }
+    for (const id of ['nav-reviews', 'nav-new', 'nav-settings', 'nav-about']) {
+      await page.getByTestId(id).click()
+      await expect(page).toHaveURL(/\/setup\/system$/)
+      await expect(page.locator('[data-screen="S1"]')).toBeVisible()
+    }
+  })
+
+  test('repeated setup allows rail navigation and keeps completed setup preferences', async ({ page }) => {
+    const preferences = {
+      author: 'codex',
+      policy: { maxRounds: 4, minRounds: 3, contribution: 'verify', newContent: 'custom', customPct: 20,
+        stop: { noCritical: true, noHigh: false, noNew: true, maxRounds: true } },
+      conn: {
+        claude: { installed: true, version: '2.1.314', connected: true, method: 'subscription' },
+        codex: { installed: true, version: '0.166.0', connected: true, method: 'api_key' },
+      },
+      shellName: { claude: 'powershell', codex: 'pwsh' },
+      workspace: 'C:\\Reviews\\Kept workspace',
+    }
+    await setupDone(page, { setupDone: false, ...preferences })
+    await page.goto(`/setup/system?${FAST}`)
+    await page.getByTestId('s1-continue').click()
+    for (let i = 0; i < 3; i++) await page.getByTestId('next').click()
+    await page.getByTestId('finish').click()
+    await expect(page.locator('[data-screen="S11"]')).toBeVisible()
+
+    for (const [id, path, screen] of [
+      ['nav-reviews', '/reviews', 'S11'], ['nav-new', '/new', 'S6'],
+      ['nav-settings', '/settings', 'S12'], ['nav-about', '/about', 'S13'],
+    ]) {
+      await page.getByTestId('nav-settings').click()
+      await page.getByTestId('run-setup').click()
+      await expect(page).toHaveURL(/\/setup\/system$/)
+      await expect(page.locator('[data-screen="S1"]')).toBeVisible()
+      await expect(page.getByTestId('s1-auth-codex')).toHaveText('connected')
+      await page.getByTestId(id).click()
+      await expect(page).toHaveURL(new RegExp(`${path}$`))
+      await expect(page.locator(`[data-screen="${screen}"]`)).toBeVisible()
+    }
+    await page.getByTestId('nav-settings').click()
+    await expect(page.getByTestId('workspace')).toHaveValue(preferences.workspace)
+    await expect(page.getByTestId('shell-claude')).toHaveValue('powershell')
+    await expect(page.getByTestId('panel-title-codex')).toHaveText('CODEX · AUTHOR')
+    expect(await page.evaluate(() => JSON.parse(localStorage.getItem('symvoulio.setup')!)))
+      .toEqual({ setupDone: true, ...preferences })
+    await page.getByTestId('run-setup').click()
+    await page.reload()
+    await expect(page.locator('[data-screen="S1"]')).toBeVisible()
+    await page.getByTestId('nav-reviews').click()
+    await expect(page).toHaveURL(/\/reviews$/)
+    expect(await page.evaluate(() => JSON.parse(localStorage.getItem('symvoulio.setup')!)))
+      .toEqual({ setupDone: true, ...preferences })
+  })
+
   test('T1: first launch S1 → S2 → S3 → S4 → S5 → S11; Back on each step; reload keeps S11', async ({ page }) => {
     await page.goto(`/?${FAST}`)
     await expect(page).toHaveURL(/\/setup\/system$/)
@@ -274,9 +334,10 @@ test.describe('Work', () => {
     await expect(page.getByTestId('doc-final')).toContainText('2.3 years')
   })
 
-  test('T8: S11 Open sample review → S7 Completed', async ({ page }) => {
+  test('T8: S11 View finished sample review → S7 Completed', async ({ page }) => {
     await setupDone(page)
     await page.goto(`/reviews?${FAST}`)
+    await expect(page.getByTestId('open-sample')).toHaveText('View finished sample review')
     await page.getByTestId('open-sample').click()
     await expect(page).toHaveURL(/\/review\/sample$/)
     await expect(page.getByTestId('status-strip')).toContainText('Round 3 of 5')
